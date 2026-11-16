@@ -1,0 +1,173 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://cloud.apizee.com/api/v3/token",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "grant_type",
+              "value": "password"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "138ec5df-8d85-4300-b593-8841bb23409c",
+      "name": "POST | api/v3/token",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        48,
+        -96
+      ],
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "Jx505sczInZDGpQb",
+          "name": "[TEST] Apizee - CO2 evite"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build screensharing URL\n\n// TODO: define a variable\nconst base_url = \"https://apizee.sekil.fr\";\n\n// Extract conversation name\nroom_name = $('GET | /api/v3/tickets/{ticketId}').first().json.conference.room_name;\nroom_conversation_name = room_name.split(':')[1];\n\n// Build URLs\nscreensharing_url = base_url + \"/screensharing/\" + room_conversation_name;\nvisio_url = base_url + \"/visio/\" + room_conversation_name;\n\nreturn {\"screensharingUrl\": screensharing_url, \"visioUrl\": visio_url};"
+      },
+      "id": "f60f8cfc-28c1-4099-af83-9e80242a0571",
+      "name": "URL generation",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        464,
+        -96
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "screensharing-demo",
+        "options": {}
+      },
+      "id": "a2a5d975-05f4-495c-bc27-829dcf4b6aaf",
+      "name": "Apizee | Webhook | Ticket create",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        -96
+      ],
+      "webhookId": "eb4a63d9-194c-4a60-b20c-273f0e46dd2f"
+    },
+    {
+      "parameters": {
+        "url": "=https://cloud.apizee.com/api/v3/tickets/{{ $('Apizee | Webhook | Ticket create').first().json.body.objectId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.access_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f1a31550-d512-42bc-9274-f0ddf0829e87",
+      "name": "GET | /api/v3/tickets/{ticketId}",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        256,
+        -96
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://cloud.apizee.com/api/v3/text-messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('POST | api/v3/token').item.json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": [\n    \"{{ $('GET | /api/v3/tickets/{ticketId}').item.json.requestor.phone }}\"\n  ],\n  \"body\": \"Bonjour, veuillez trouver ci-après votre lien de partage d'écran : {{ $('URL generation').item.json.screensharingUrl }}\"\n}",
+        "options": {}
+      },
+      "id": "2f135c49-a35f-4346-ba4f-914ecd47c614",
+      "name": "POST | /api/v3/text-messages | FR",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        672,
+        -96
+      ]
+    }
+  ],
+  "connections": {
+    "POST | api/v3/token": {
+      "main": [
+        [
+          {
+            "node": "GET | /api/v3/tickets/{ticketId}",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "URL generation": {
+      "main": [
+        [
+          {
+            "node": "POST | /api/v3/text-messages | FR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apizee | Webhook | Ticket create": {
+      "main": [
+        [
+          {
+            "node": "POST | api/v3/token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET | /api/v3/tickets/{ticketId}": {
+      "main": [
+        [
+          {
+            "node": "URL generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "cebf75a82f18a5a793df051f2621f227512388113c2e471fcc214f13c6c43162"
+  }
+}

@@ -1,0 +1,474 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>doc-errormanagement-good</title>
+	</head>
+	<body>
+		<script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs@2.0.0/webcomponents-loader.js"></script>
+		<script src="https://www.unpkg.com/lit@2.0.0-rc.2/polyfill-support.js"></script>
+		<script type="module" src="https://cdn.jsdelivr.net/npm/@n8n_io/n8n-demo-component/n8n-demo.bundled.js"></script>
+
+		<n8n-demo workflow="{
+  &quot;nodes&quot;: [
+    {
+      &quot;parameters&quot;: {
+        &quot;jsCode&quot;: &quot;// Build screensharing URL\n\n// TODO: define a variable\nconst base_url = \&quot;https://apizee.sekil.fr\&quot;;\n\n// Extract conversation name\nroom_name = $(&#x27;Apizee - Get ticket&#x27;).first().json.conference.room_name;\nroom_conversation_name = room_name.split(&#x27;:&#x27;)[1];\n\n// Build URLs\nscreensharing_url = base_url + \&quot;/screensharing/\&quot; + room_conversation_name;\nvisio_url = base_url + \&quot;/visio/\&quot; + room_conversation_name;\n\nreturn {\&quot;screensharingUrl\&quot;: screensharing_url, \&quot;visioUrl\&quot;: visio_url};&quot;
+      },
+      &quot;id&quot;: &quot;768d86a4-1243-486d-9766-3d7d429d8421&quot;,
+      &quot;name&quot;: &quot;URL generation&quot;,
+      &quot;type&quot;: &quot;n8n-nodes-base.code&quot;,
+      &quot;typeVersion&quot;: 2,
+      &quot;position&quot;: [
+        688,
+        -96
+      ]
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;httpMethod&quot;: &quot;POST&quot;,
+        &quot;path&quot;: &quot;dd71f693-1a7f-4d7c-9756-ae0208f0b0fd&quot;,
+        &quot;options&quot;: {}
+      },
+      &quot;id&quot;: &quot;3e6da6cc-23b6-4c12-a008-46ebc4c078e0&quot;,
+      &quot;name&quot;: &quot;Webhook - Apizee - Ticket create&quot;,
+      &quot;type&quot;: &quot;n8n-nodes-base.webhook&quot;,
+      &quot;typeVersion&quot;: 2,
+      &quot;position&quot;: [
+        -192,
+        -96
+      ],
+      &quot;webhookId&quot;: &quot;dd71f693-1a7f-4d7c-9756-ae0208f0b0fd&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;method&quot;: &quot;POST&quot;,
+        &quot;url&quot;: &quot;https://cloud.apizee.com/api/v3/token&quot;,
+        &quot;authentication&quot;: &quot;genericCredentialType&quot;,
+        &quot;genericAuthType&quot;: &quot;httpCustomAuth&quot;,
+        &quot;sendBody&quot;: true,
+        &quot;bodyParameters&quot;: {
+          &quot;parameters&quot;: [
+            {
+              &quot;name&quot;: &quot;grant_type&quot;,
+              &quot;value&quot;: &quot;password&quot;
+            }
+          ]
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;id&quot;: &quot;2f08ffea-7703-4215-9671-ceac416dd553&quot;,
+      &quot;name&quot;: &quot;Apizee - Get access token&quot;,
+      &quot;type&quot;: &quot;n8n-nodes-base.httpRequest&quot;,
+      &quot;typeVersion&quot;: 4.2,
+      &quot;position&quot;: [
+        48,
+        -96
+      ],
+      &quot;credentials&quot;: {
+        &quot;httpCustomAuth&quot;: {
+          &quot;id&quot;: &quot;Jx505sczInZDGpQb&quot;,
+          &quot;name&quot;: &quot;[TEST] Apizee - CO2 evite&quot;
+        }
+      },
+      &quot;onError&quot;: &quot;continueErrorOutput&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;url&quot;: &quot;=https://cloud.apizee.com/api/v3/tickets/{{ $(&#x27;Webhook - Apizee - Ticket create&#x27;).first().json.body.objectId }}&quot;,
+        &quot;sendHeaders&quot;: true,
+        &quot;headerParameters&quot;: {
+          &quot;parameters&quot;: [
+            {
+              &quot;name&quot;: &quot;accept&quot;,
+              &quot;value&quot;: &quot;application/json&quot;
+            },
+            {
+              &quot;name&quot;: &quot;Authorization&quot;,
+              &quot;value&quot;: &quot;=Bearer {{ $json.access_token }}&quot;
+            }
+          ]
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;id&quot;: &quot;be75b81e-b352-4fa9-9942-f26f68f7ae64&quot;,
+      &quot;name&quot;: &quot;Apizee - Get ticket&quot;,
+      &quot;type&quot;: &quot;n8n-nodes-base.httpRequest&quot;,
+      &quot;typeVersion&quot;: 4.2,
+      &quot;position&quot;: [
+        480,
+        -96
+      ],
+      &quot;onError&quot;: &quot;continueErrorOutput&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;method&quot;: &quot;POST&quot;,
+        &quot;url&quot;: &quot;https://cloud.apizee.com/api/v3/text-messages&quot;,
+        &quot;sendHeaders&quot;: true,
+        &quot;headerParameters&quot;: {
+          &quot;parameters&quot;: [
+            {
+              &quot;name&quot;: &quot;accept&quot;,
+              &quot;value&quot;: &quot;application/json&quot;
+            },
+            {
+              &quot;name&quot;: &quot;Authorization&quot;,
+              &quot;value&quot;: &quot;=Bearer {{ $(&#x27;Apizee - Get access token&#x27;).item.json.access_token }}&quot;
+            }
+          ]
+        },
+        &quot;sendBody&quot;: true,
+        &quot;specifyBody&quot;: &quot;json&quot;,
+        &quot;jsonBody&quot;: &quot;={\n  \&quot;to\&quot;: [\n    \&quot;{{ $(&#x27;Apizee - Get ticket&#x27;).item.json.requestor.phone }}\&quot;\n  ],\n  \&quot;body\&quot;: \&quot;Bonjour, veuillez trouver ci-après votre lien de partage d&#x27;écran : {{ $(&#x27;URL generation&#x27;).item.json.screensharingUrl }}\&quot;\n}&quot;,
+        &quot;options&quot;: {}
+      },
+      &quot;id&quot;: &quot;7c40ed44-ae75-4487-a70a-3f74515c471d&quot;,
+      &quot;name&quot;: &quot;Apizee - Send SMS&quot;,
+      &quot;type&quot;: &quot;n8n-nodes-base.httpRequest&quot;,
+      &quot;typeVersion&quot;: 4.2,
+      &quot;position&quot;: [
+        960,
+        -96
+      ],
+      &quot;onError&quot;: &quot;continueErrorOutput&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;respondWith&quot;: &quot;text&quot;,
+        &quot;responseBody&quot;: &quot;Could not get access token&quot;,
+        &quot;options&quot;: {
+          &quot;responseCode&quot;: 500
+        }
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.respondToWebhook&quot;,
+      &quot;typeVersion&quot;: 1.5,
+      &quot;position&quot;: [
+        960,
+        128
+      ],
+      &quot;id&quot;: &quot;1314de05-6b8d-4951-9709-42f0eda28886&quot;,
+      &quot;name&quot;: &quot;Respond to Webhook - Error Send SMS&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;respondWith&quot;: &quot;text&quot;,
+        &quot;responseBody&quot;: &quot;Could not get access token&quot;,
+        &quot;options&quot;: {
+          &quot;responseCode&quot;: 500
+        }
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.respondToWebhook&quot;,
+      &quot;typeVersion&quot;: 1.5,
+      &quot;position&quot;: [
+        48,
+        128
+      ],
+      &quot;id&quot;: &quot;6e5b9ba9-5d0f-4554-935f-94c09658f657&quot;,
+      &quot;name&quot;: &quot;Respond to Webhook - Error Get access token&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;errorMessage&quot;: &quot;Failed to get access token&quot;
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.stopAndError&quot;,
+      &quot;typeVersion&quot;: 1,
+      &quot;position&quot;: [
+        240,
+        128
+      ],
+      &quot;id&quot;: &quot;ec21a787-57db-4f09-8cfc-eec80f4e7b10&quot;,
+      &quot;name&quot;: &quot;Stop and Error - Error Get access token&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;respondWith&quot;: &quot;text&quot;,
+        &quot;responseBody&quot;: &quot;Could not get access token&quot;,
+        &quot;options&quot;: {
+          &quot;responseCode&quot;: 500
+        }
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.respondToWebhook&quot;,
+      &quot;typeVersion&quot;: 1.5,
+      &quot;position&quot;: [
+        480,
+        128
+      ],
+      &quot;id&quot;: &quot;d827dff7-a9d9-4020-b525-71f8ce1c977e&quot;,
+      &quot;name&quot;: &quot;Respond to Webhook - Error Get ticket&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;workflowId&quot;: {
+          &quot;__rl&quot;: true,
+          &quot;value&quot;: &quot;NTEIQ9gAZqGwf807YSqjc&quot;,
+          &quot;mode&quot;: &quot;list&quot;,
+          &quot;cachedResultUrl&quot;: &quot;/n8n/workflow/NTEIQ9gAZqGwf807YSqjc&quot;,
+          &quot;cachedResultName&quot;: &quot;[ETH] Test error workflow&quot;
+        },
+        &quot;workflowInputs&quot;: {
+          &quot;mappingMode&quot;: &quot;defineBelow&quot;,
+          &quot;value&quot;: {
+            &quot;notify&quot;: false,
+            &quot;workflow_id&quot;: &quot;={{ $workflow.id }}&quot;,
+            &quot;execution_id&quot;: &quot;={{ $execution.id }}&quot;,
+            &quot;status&quot;: &quot;=error&quot;,
+            &quot;message&quot;: &quot;=Workflow {{ $workflow.name }} started&quot;
+          },
+          &quot;matchingColumns&quot;: [],
+          &quot;schema&quot;: [
+            {
+              &quot;id&quot;: &quot;workflow_id&quot;,
+              &quot;displayName&quot;: &quot;workflow_id&quot;,
+              &quot;required&quot;: false,
+              &quot;defaultMatch&quot;: false,
+              &quot;display&quot;: true,
+              &quot;canBeUsedToMatch&quot;: true,
+              &quot;type&quot;: &quot;string&quot;
+            },
+            {
+              &quot;id&quot;: &quot;execution_id&quot;,
+              &quot;displayName&quot;: &quot;execution_id&quot;,
+              &quot;required&quot;: false,
+              &quot;defaultMatch&quot;: false,
+              &quot;display&quot;: true,
+              &quot;canBeUsedToMatch&quot;: true,
+              &quot;type&quot;: &quot;string&quot;
+            },
+            {
+              &quot;id&quot;: &quot;status&quot;,
+              &quot;displayName&quot;: &quot;status&quot;,
+              &quot;required&quot;: false,
+              &quot;defaultMatch&quot;: false,
+              &quot;display&quot;: true,
+              &quot;canBeUsedToMatch&quot;: true,
+              &quot;type&quot;: &quot;string&quot;
+            },
+            {
+              &quot;id&quot;: &quot;message&quot;,
+              &quot;displayName&quot;: &quot;message&quot;,
+              &quot;required&quot;: false,
+              &quot;defaultMatch&quot;: false,
+              &quot;display&quot;: true,
+              &quot;canBeUsedToMatch&quot;: true,
+              &quot;type&quot;: &quot;string&quot;
+            },
+            {
+              &quot;id&quot;: &quot;notify&quot;,
+              &quot;displayName&quot;: &quot;notify&quot;,
+              &quot;required&quot;: false,
+              &quot;defaultMatch&quot;: false,
+              &quot;display&quot;: true,
+              &quot;canBeUsedToMatch&quot;: true,
+              &quot;type&quot;: &quot;boolean&quot;
+            }
+          ],
+          &quot;attemptToConvertTypes&quot;: false,
+          &quot;convertFieldsToString&quot;: true
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.executeWorkflow&quot;,
+      &quot;typeVersion&quot;: 1.3,
+      &quot;position&quot;: [
+        688,
+        128
+      ],
+      &quot;id&quot;: &quot;7268de4f-2261-4405-9f9f-ca5998ac1acd&quot;,
+      &quot;name&quot;: &quot;Log workflow event - Error Get ticket&quot;,
+      &quot;alwaysOutputData&quot;: false
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;workflowId&quot;: {
+          &quot;__rl&quot;: true,
+          &quot;value&quot;: &quot;NTEIQ9gAZqGwf807YSqjc&quot;,
+          &quot;mode&quot;: &quot;list&quot;,
+          &quot;cachedResultUrl&quot;: &quot;/n8n/workflow/NTEIQ9gAZqGwf807YSqjc&quot;,
+          &quot;cachedResultName&quot;: &quot;[ETH] Test error workflow&quot;
+        },
+        &quot;workflowInputs&quot;: {
+          &quot;mappingMode&quot;: &quot;defineBelow&quot;,
+          &quot;value&quot;: {
+            &quot;notify&quot;: false,
+            &quot;workflow_id&quot;: &quot;={{ $workflow.id }}&quot;,
+            &quot;execution_id&quot;: &quot;={{ $execution.id }}&quot;,
+            &quot;status&quot;: &quot;=user-error&quot;,
+            &quot;message&quot;: &quot;=Workflow {{ $workflow.name }} started&quot;
+          },
+          &quot;matchingColumns&quot;: [],
+          &quot;schema&quot;: [
+            {
+              &quot;id&quot;: &quot;workflow_id&quot;,
+              &quot;displayName&quot;: &quot;workflow_id&quot;,
+              &quot;required&quot;: false,
+              &quot;defaultMatch&quot;: false,
+              &quot;display&quot;: true,
+              &quot;canBeUsedToMatch&quot;: true,
+              &quot;type&quot;: &quot;string&quot;
+            },
+            {
+              &quot;id&quot;: &quot;execution_id&quot;,
+              &quot;displayName&quot;: &quot;execution_id&quot;,
+              &quot;required&quot;: false,
+              &quot;defaultMatch&quot;: false,
+              &quot;display&quot;: true,
+              &quot;canBeUsedToMatch&quot;: true,
+              &quot;type&quot;: &quot;string&quot;
+            },
+            {
+              &quot;id&quot;: &quot;status&quot;,
+              &quot;displayName&quot;: &quot;status&quot;,
+              &quot;required&quot;: false,
+              &quot;defaultMatch&quot;: false,
+              &quot;display&quot;: true,
+              &quot;canBeUsedToMatch&quot;: true,
+              &quot;type&quot;: &quot;string&quot;
+            },
+            {
+              &quot;id&quot;: &quot;message&quot;,
+              &quot;displayName&quot;: &quot;message&quot;,
+              &quot;required&quot;: false,
+              &quot;defaultMatch&quot;: false,
+              &quot;display&quot;: true,
+              &quot;canBeUsedToMatch&quot;: true,
+              &quot;type&quot;: &quot;string&quot;
+            },
+            {
+              &quot;id&quot;: &quot;notify&quot;,
+              &quot;displayName&quot;: &quot;notify&quot;,
+              &quot;required&quot;: false,
+              &quot;defaultMatch&quot;: false,
+              &quot;display&quot;: true,
+              &quot;canBeUsedToMatch&quot;: true,
+              &quot;type&quot;: &quot;boolean&quot;
+            }
+          ],
+          &quot;attemptToConvertTypes&quot;: false,
+          &quot;convertFieldsToString&quot;: true
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.executeWorkflow&quot;,
+      &quot;typeVersion&quot;: 1.3,
+      &quot;position&quot;: [
+        1152,
+        128
+      ],
+      &quot;id&quot;: &quot;33d9d099-d33e-4a8a-874e-3c7147d79814&quot;,
+      &quot;name&quot;: &quot;Log workflow event - Error Send SMS&quot;,
+      &quot;alwaysOutputData&quot;: false
+    }
+  ],
+  &quot;connections&quot;: {
+    &quot;URL generation&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Apizee - Send SMS&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Webhook - Apizee - Ticket create&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Apizee - Get access token&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Apizee - Get access token&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Apizee - Get ticket&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ],
+        [
+          {
+            &quot;node&quot;: &quot;Respond to Webhook - Error Get access token&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Apizee - Get ticket&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;URL generation&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ],
+        [
+          {
+            &quot;node&quot;: &quot;Respond to Webhook - Error Get ticket&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Apizee - Send SMS&quot;: {
+      &quot;main&quot;: [
+        [],
+        [
+          {
+            &quot;node&quot;: &quot;Respond to Webhook - Error Send SMS&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Respond to Webhook - Error Send SMS&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Log workflow event - Error Send SMS&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Respond to Webhook - Error Get access token&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Stop and Error - Error Get access token&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Respond to Webhook - Error Get ticket&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Log workflow event - Error Get ticket&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    }
+  },
+  &quot;pinData&quot;: {},
+  &quot;meta&quot;: {
+    &quot;instanceId&quot;: &quot;cebf75a82f18a5a793df051f2621f227512388113c2e471fcc214f13c6c43162&quot;
+  }
+}
+" ></n8n-demo>
+	</body>
+</html>

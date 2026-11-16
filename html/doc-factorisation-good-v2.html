@@ -1,0 +1,543 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>doc-factorisation-good-v2</title>
+	</head>
+	<body>
+		<script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs@2.0.0/webcomponents-loader.js"></script>
+		<script src="https://www.unpkg.com/lit@2.0.0-rc.2/polyfill-support.js"></script>
+		<script type="module" src="https://cdn.jsdelivr.net/npm/@n8n_io/n8n-demo-component/n8n-demo.bundled.js"></script>
+
+		<n8n-demo workflow="{
+  &quot;nodes&quot;: [
+    {
+      &quot;parameters&quot;: {
+        &quot;rule&quot;: {
+          &quot;interval&quot;: [
+            {
+              &quot;field&quot;: &quot;months&quot;,
+              &quot;triggerAtHour&quot;: 1,
+              &quot;triggerAtMinute&quot;: 5
+            }
+          ]
+        }
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.scheduleTrigger&quot;,
+      &quot;typeVersion&quot;: 1.2,
+      &quot;position&quot;: [
+        -80,
+        -112
+      ],
+      &quot;id&quot;: &quot;99fec47f-2e2e-41a4-9807-3a4947397a06&quot;,
+      &quot;name&quot;: &quot;Schedule Trigger&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;fromEmail&quot;: &quot;notifications@apizee.com&quot;,
+        &quot;toEmail&quot;: &quot;Emmanuel Thierry &lt;emmanuel.thierry@apizee.com&gt;&quot;,
+        &quot;subject&quot;: &quot;Données de facturation Apizee pour Odigo&quot;,
+        &quot;html&quot;: &quot;Bonjour,&lt;br /&gt;\n&lt;br /&gt;\nVeuillez trouver ci-joint les données de facturation Apizee pour Odigo.&lt;br /&gt;\n&lt;br /&gt;\nCordialement&lt;br /&gt;\nL&#x27;équipe Apizee&lt;br /&gt;\n\n&quot;,
+        &quot;options&quot;: {
+          &quot;appendAttribution&quot;: false,
+          &quot;attachments&quot;: &quot;data&quot;,
+          &quot;replyTo&quot;: &quot;emmanuel.thierry@apizee.com&quot;
+        }
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.emailSend&quot;,
+      &quot;typeVersion&quot;: 2.1,
+      &quot;position&quot;: [
+        544,
+        -112
+      ],
+      &quot;id&quot;: &quot;7460c2eb-42b7-4deb-9fc9-f2075b9e4580&quot;,
+      &quot;name&quot;: &quot;Send email&quot;,
+      &quot;webhookId&quot;: &quot;db0eb6c8-c622-454a-82af-ac0112dbe769&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;jsCode&quot;: &quot;// Date calculations assume this workflow was scheduled the first day of the month after midnight\nvar invocation = new Date($input.first().json.timestamp);\n\n// Get the first day of the previous month\nvar start = new Date(invocation.getFullYear(), invocation.getMonth()-1, 1).toISOString().split(\&quot;.\&quot;)[0] + \&quot;Z\&quot;;\n\n// Get the last day of the previous month\nvar end = new Date(invocation.getFullYear(), invocation.getMonth(), 0).toISOString().split(\&quot;.\&quot;)[0] + \&quot;Z\&quot;;\n\n// Build the filename with the last day of the previous month\nvar filename = \&quot;Apizee\&quot; + new Date(invocation.getFullYear(), invocation.getMonth(), 0).toISOString().split(\&quot;T\&quot;)[0].replaceAll(\&quot;-\&quot;,\&quot;\&quot;) + \&quot;.csv\&quot;;\n\nreturn {\&quot;start\&quot;: start, \&quot;end\&quot;: end, \&quot;filename\&quot;: filename};&quot;
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.code&quot;,
+      &quot;typeVersion&quot;: 2,
+      &quot;position&quot;: [
+        128,
+        -112
+      ],
+      &quot;id&quot;: &quot;67e3c3d7-cd2e-4c01-8689-92a9ae47ff00&quot;,
+      &quot;name&quot;: &quot;Compute reference period&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;formTitle&quot;: &quot;Get past stats&quot;,
+        &quot;formFields&quot;: {
+          &quot;values&quot;: [
+            {
+              &quot;fieldLabel&quot;: &quot;Start of period&quot;,
+              &quot;fieldType&quot;: &quot;date&quot;,
+              &quot;requiredField&quot;: true
+            },
+            {
+              &quot;fieldLabel&quot;: &quot;End of period&quot;,
+              &quot;fieldType&quot;: &quot;date&quot;,
+              &quot;requiredField&quot;: true
+            }
+          ]
+        },
+        &quot;responseMode&quot;: &quot;lastNode&quot;,
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.formTrigger&quot;,
+      &quot;typeVersion&quot;: 2.3,
+      &quot;position&quot;: [
+        -80,
+        80
+      ],
+      &quot;id&quot;: &quot;d8128f28-e234-40fa-9828-b84d181713b3&quot;,
+      &quot;name&quot;: &quot;Call workflow - On form submission&quot;,
+      &quot;webhookId&quot;: &quot;3be8ff32-f7c0-4317-8526-aad3a6126670&quot;
+    },
+    {
+      &quot;parameters&quot;: {},
+      &quot;type&quot;: &quot;n8n-nodes-base.noOp&quot;,
+      &quot;typeVersion&quot;: 1,
+      &quot;position&quot;: [
+        544,
+        80
+      ],
+      &quot;id&quot;: &quot;c8554066-e935-4750-b869-de8843b93140&quot;,
+      &quot;name&quot;: &quot;No Operation, do nothing&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;operation&quot;: &quot;completion&quot;,
+        &quot;respondWith&quot;: &quot;returnBinary&quot;,
+        &quot;completionTitle&quot;: &quot;Report&quot;,
+        &quot;completionMessage&quot;: &quot;Report&quot;,
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.form&quot;,
+      &quot;typeVersion&quot;: 2.3,
+      &quot;position&quot;: [
+        976,
+        -16
+      ],
+      &quot;id&quot;: &quot;33f0b0ed-c1a3-4a9a-be48-c81b9ce13ac4&quot;,
+      &quot;name&quot;: &quot;Call workflow - Form ending&quot;,
+      &quot;webhookId&quot;: &quot;a4533630-3ac7-483d-90bb-110080eb379b&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;conditions&quot;: {
+          &quot;options&quot;: {
+            &quot;caseSensitive&quot;: true,
+            &quot;leftValue&quot;: &quot;&quot;,
+            &quot;typeValidation&quot;: &quot;strict&quot;,
+            &quot;version&quot;: 2
+          },
+          &quot;conditions&quot;: [
+            {
+              &quot;id&quot;: &quot;ba46239c-228d-4f2a-9094-4872ec87d5fb&quot;,
+              &quot;leftValue&quot;: &quot;={{ $binary.data }}&quot;,
+              &quot;rightValue&quot;: &quot;&quot;,
+              &quot;operator&quot;: {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;operation&quot;: &quot;exists&quot;,
+                &quot;singleValue&quot;: true
+              }
+            }
+          ],
+          &quot;combinator&quot;: &quot;and&quot;
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.if&quot;,
+      &quot;typeVersion&quot;: 2.2,
+      &quot;position&quot;: [
+        752,
+        80
+      ],
+      &quot;id&quot;: &quot;a605f43c-f78a-4cd7-94e1-52253ced1c49&quot;,
+      &quot;name&quot;: &quot;If - File exists&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;operation&quot;: &quot;completion&quot;,
+        &quot;completionTitle&quot;: &quot;Error in workflow&quot;,
+        &quot;completionMessage&quot;: &quot;An error occurred during workflow execution, see the matrix chan for details&quot;,
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.form&quot;,
+      &quot;typeVersion&quot;: 2.3,
+      &quot;position&quot;: [
+        976,
+        176
+      ],
+      &quot;id&quot;: &quot;8f210915-2827-4019-8af5-8b81b585741b&quot;,
+      &quot;name&quot;: &quot;Call workflow - Form ending with error&quot;,
+      &quot;webhookId&quot;: &quot;a4533630-3ac7-483d-90bb-110080eb379b&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;workflowId&quot;: {
+          &quot;__rl&quot;: true,
+          &quot;value&quot;: &quot;7jc0aFMQYcUd62i3&quot;,
+          &quot;mode&quot;: &quot;list&quot;,
+          &quot;cachedResultUrl&quot;: &quot;/workflow/7jc0aFMQYcUd62i3&quot;,
+          &quot;cachedResultName&quot;: &quot;Apizee — [ODIGO] Billing&quot;
+        },
+        &quot;workflowInputs&quot;: {
+          &quot;mappingMode&quot;: &quot;defineBelow&quot;,
+          &quot;value&quot;: {
+            &quot;start&quot;: &quot;={{ $json.start }}&quot;,
+            &quot;end&quot;: &quot;={{ $json.end }}&quot;,
+            &quot;filename&quot;: &quot;={{ $json.filename }}&quot;
+          },
+          &quot;matchingColumns&quot;: [],
+          &quot;schema&quot;: [
+            {
+              &quot;id&quot;: &quot;start&quot;,
+              &quot;displayName&quot;: &quot;start&quot;,
+              &quot;required&quot;: false,
+              &quot;defaultMatch&quot;: false,
+              &quot;display&quot;: true,
+              &quot;canBeUsedToMatch&quot;: true,
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;removed&quot;: false
+            },
+            {
+              &quot;id&quot;: &quot;end&quot;,
+              &quot;displayName&quot;: &quot;end&quot;,
+              &quot;required&quot;: false,
+              &quot;defaultMatch&quot;: false,
+              &quot;display&quot;: true,
+              &quot;canBeUsedToMatch&quot;: true,
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;removed&quot;: false
+            },
+            {
+              &quot;id&quot;: &quot;filename&quot;,
+              &quot;displayName&quot;: &quot;filename&quot;,
+              &quot;required&quot;: false,
+              &quot;defaultMatch&quot;: false,
+              &quot;display&quot;: true,
+              &quot;canBeUsedToMatch&quot;: true,
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;removed&quot;: false
+            }
+          ],
+          &quot;attemptToConvertTypes&quot;: false,
+          &quot;convertFieldsToString&quot;: true
+        },
+        &quot;options&quot;: {
+          &quot;waitForSubWorkflow&quot;: true
+        }
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.executeWorkflow&quot;,
+      &quot;typeVersion&quot;: 1.3,
+      &quot;position&quot;: [
+        352,
+        -112
+      ],
+      &quot;id&quot;: &quot;446d6c23-48f0-4bc3-b837-387cec2031f4&quot;,
+      &quot;name&quot;: &quot;Call &#x27;[ODIGO] Billing&#x27; - Schedule path&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;workflowId&quot;: {
+          &quot;__rl&quot;: true,
+          &quot;value&quot;: &quot;7jc0aFMQYcUd62i3&quot;,
+          &quot;mode&quot;: &quot;list&quot;,
+          &quot;cachedResultUrl&quot;: &quot;/workflow/7jc0aFMQYcUd62i3&quot;,
+          &quot;cachedResultName&quot;: &quot;Apizee — [ODIGO] Billing&quot;
+        },
+        &quot;workflowInputs&quot;: {
+          &quot;mappingMode&quot;: &quot;defineBelow&quot;,
+          &quot;value&quot;: {
+            &quot;start&quot;: &quot;={{ $json[&#x27;Start of period&#x27;] }}T00:00:00Z&quot;,
+            &quot;end&quot;: &quot;={{ $json[&#x27;End of period&#x27;] }}T23:59:59Z&quot;,
+            &quot;filename&quot;: &quot;=Apizee{{ $json[&#x27;End of period&#x27;].replaceAll(\&quot;-\&quot;,\&quot;\&quot;) }}.csv&quot;
+          },
+          &quot;matchingColumns&quot;: [],
+          &quot;schema&quot;: [
+            {
+              &quot;id&quot;: &quot;start&quot;,
+              &quot;displayName&quot;: &quot;start&quot;,
+              &quot;required&quot;: false,
+              &quot;defaultMatch&quot;: false,
+              &quot;display&quot;: true,
+              &quot;canBeUsedToMatch&quot;: true,
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;removed&quot;: false
+            },
+            {
+              &quot;id&quot;: &quot;end&quot;,
+              &quot;displayName&quot;: &quot;end&quot;,
+              &quot;required&quot;: false,
+              &quot;defaultMatch&quot;: false,
+              &quot;display&quot;: true,
+              &quot;canBeUsedToMatch&quot;: true,
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;removed&quot;: false
+            },
+            {
+              &quot;id&quot;: &quot;filename&quot;,
+              &quot;displayName&quot;: &quot;filename&quot;,
+              &quot;required&quot;: false,
+              &quot;defaultMatch&quot;: false,
+              &quot;display&quot;: true,
+              &quot;canBeUsedToMatch&quot;: true,
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;removed&quot;: false
+            }
+          ],
+          &quot;attemptToConvertTypes&quot;: false,
+          &quot;convertFieldsToString&quot;: true
+        },
+        &quot;options&quot;: {
+          &quot;waitForSubWorkflow&quot;: true
+        }
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.executeWorkflow&quot;,
+      &quot;typeVersion&quot;: 1.3,
+      &quot;position&quot;: [
+        352,
+        80
+      ],
+      &quot;id&quot;: &quot;dc6e2a35-1cc4-43f8-a8bb-b65bd6d5d2df&quot;,
+      &quot;name&quot;: &quot;Call &#x27;[ODIGO] Billing&#x27; - Form path&quot;,
+      &quot;alwaysOutputData&quot;: true
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;path&quot;: &quot;2069fde0-a15e-41a0-b6d0-dcc72d6c7e12&quot;,
+        &quot;responseMode&quot;: &quot;responseNode&quot;,
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.webhook&quot;,
+      &quot;typeVersion&quot;: 2.1,
+      &quot;position&quot;: [
+        -80,
+        304
+      ],
+      &quot;id&quot;: &quot;a0472fa5-3e89-4730-b1f4-9167661b48d8&quot;,
+      &quot;name&quot;: &quot;Webhook&quot;,
+      &quot;webhookId&quot;: &quot;2069fde0-a15e-41a0-b6d0-dcc72d6c7e12&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;workflowId&quot;: {
+          &quot;__rl&quot;: true,
+          &quot;value&quot;: &quot;7jc0aFMQYcUd62i3&quot;,
+          &quot;mode&quot;: &quot;list&quot;,
+          &quot;cachedResultUrl&quot;: &quot;/workflow/7jc0aFMQYcUd62i3&quot;,
+          &quot;cachedResultName&quot;: &quot;Apizee — [ODIGO] Billing&quot;
+        },
+        &quot;workflowInputs&quot;: {
+          &quot;mappingMode&quot;: &quot;defineBelow&quot;,
+          &quot;value&quot;: {
+            &quot;start&quot;: &quot;={{ $json.start }}&quot;,
+            &quot;end&quot;: &quot;={{ $json.end }}&quot;,
+            &quot;filename&quot;: &quot;={{ $json.filename }}&quot;
+          },
+          &quot;matchingColumns&quot;: [],
+          &quot;schema&quot;: [
+            {
+              &quot;id&quot;: &quot;start&quot;,
+              &quot;displayName&quot;: &quot;start&quot;,
+              &quot;required&quot;: false,
+              &quot;defaultMatch&quot;: false,
+              &quot;display&quot;: true,
+              &quot;canBeUsedToMatch&quot;: true,
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;removed&quot;: false
+            },
+            {
+              &quot;id&quot;: &quot;end&quot;,
+              &quot;displayName&quot;: &quot;end&quot;,
+              &quot;required&quot;: false,
+              &quot;defaultMatch&quot;: false,
+              &quot;display&quot;: true,
+              &quot;canBeUsedToMatch&quot;: true,
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;removed&quot;: false
+            },
+            {
+              &quot;id&quot;: &quot;filename&quot;,
+              &quot;displayName&quot;: &quot;filename&quot;,
+              &quot;required&quot;: false,
+              &quot;defaultMatch&quot;: false,
+              &quot;display&quot;: true,
+              &quot;canBeUsedToMatch&quot;: true,
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;removed&quot;: false
+            }
+          ],
+          &quot;attemptToConvertTypes&quot;: false,
+          &quot;convertFieldsToString&quot;: true
+        },
+        &quot;options&quot;: {
+          &quot;waitForSubWorkflow&quot;: true
+        }
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.executeWorkflow&quot;,
+      &quot;typeVersion&quot;: 1.3,
+      &quot;position&quot;: [
+        352,
+        304
+      ],
+      &quot;id&quot;: &quot;8795829e-5871-4cbb-9886-91c6db0d6e35&quot;,
+      &quot;name&quot;: &quot;Call &#x27;[ODIGO] Billing&#x27; - Webhook path&quot;,
+      &quot;alwaysOutputData&quot;: true
+    },
+    {
+      &quot;parameters&quot;: {},
+      &quot;type&quot;: &quot;n8n-nodes-base.noOp&quot;,
+      &quot;typeVersion&quot;: 1,
+      &quot;position&quot;: [
+        544,
+        304
+      ],
+      &quot;id&quot;: &quot;5e36aba9-d22c-4322-84b0-efd9104e9b37&quot;,
+      &quot;name&quot;: &quot;No Operation, do nothing1&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.respondToWebhook&quot;,
+      &quot;typeVersion&quot;: 1.5,
+      &quot;position&quot;: [
+        752,
+        304
+      ],
+      &quot;id&quot;: &quot;03c935d2-5341-4159-87ae-1cabdfff2100&quot;,
+      &quot;name&quot;: &quot;Respond to Webhook&quot;
+    }
+  ],
+  &quot;connections&quot;: {
+    &quot;Schedule Trigger&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Compute reference period&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Compute reference period&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Call &#x27;[ODIGO] Billing&#x27; - Schedule path&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Call workflow - On form submission&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Call &#x27;[ODIGO] Billing&#x27; - Form path&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;No Operation, do nothing&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;If - File exists&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;If - File exists&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Call workflow - Form ending&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ],
+        [
+          {
+            &quot;node&quot;: &quot;Call workflow - Form ending with error&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Call &#x27;[ODIGO] Billing&#x27; - Schedule path&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Send email&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Call &#x27;[ODIGO] Billing&#x27; - Form path&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;No Operation, do nothing&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Webhook&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Call &#x27;[ODIGO] Billing&#x27; - Webhook path&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Call &#x27;[ODIGO] Billing&#x27; - Webhook path&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;No Operation, do nothing1&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;No Operation, do nothing1&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Respond to Webhook&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    }
+  },
+  &quot;pinData&quot;: {},
+  &quot;meta&quot;: {
+    &quot;instanceId&quot;: &quot;cebf75a82f18a5a793df051f2621f227512388113c2e471fcc214f13c6c43162&quot;
+  }
+}
+" ></n8n-demo>
+	</body>
+</html>

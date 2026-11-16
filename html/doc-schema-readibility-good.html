@@ -1,0 +1,1189 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>doc-schema-readibility-good</title>
+	</head>
+	<body>
+		<script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs@2.0.0/webcomponents-loader.js"></script>
+		<script src="https://www.unpkg.com/lit@2.0.0-rc.2/polyfill-support.js"></script>
+		<script type="module" src="https://cdn.jsdelivr.net/npm/@n8n_io/n8n-demo-component/n8n-demo.bundled.js"></script>
+
+		<n8n-demo workflow="{
+  &quot;nodes&quot;: [
+    {
+      &quot;parameters&quot;: {
+        &quot;modelId&quot;: {
+          &quot;__rl&quot;: true,
+          &quot;value&quot;: &quot;gpt-4.1-nano&quot;,
+          &quot;mode&quot;: &quot;list&quot;,
+          &quot;cachedResultName&quot;: &quot;GPT-4.1-NANO&quot;
+        },
+        &quot;messages&quot;: {
+          &quot;values&quot;: [
+            {
+              &quot;content&quot;: &quot;=You are a customer service agent of the company \&quot;Be Telecom\&quot;. Your role is to provide support to users. A user called for issues with their network connectivity on an Internet router provided by your company. You are asked to identify the device causing the issue.\n\nThe user has been uploading images whose description are available in work notes. Extract the Serial Number of the affected device from work notes. Use the tool Get Work Notes to retrieve information about the issue.\n\nOutput the response in json, with the following key \&quot;serial_number\&quot; set to the extracted value. If you could not extract the serial number, output an empty json.\n&quot;,
+              &quot;role&quot;: &quot;system&quot;
+            },
+            {
+              &quot;content&quot;: &quot;Analyse this issue.&quot;
+            }
+          ]
+        },
+        &quot;jsonOutput&quot;: true,
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;@n8n/n8n-nodes-langchain.openAi&quot;,
+      &quot;typeVersion&quot;: 1.8,
+      &quot;position&quot;: [
+        496,
+        288
+      ],
+      &quot;id&quot;: &quot;56d7e1b3-1a18-4426-a3d0-b7284a94a327&quot;,
+      &quot;name&quot;: &quot;OpenAI - Device identification&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;descriptionType&quot;: &quot;manual&quot;,
+        &quot;toolDescription&quot;: &quot;Use this tool to get work notes associated to the user issue.&quot;,
+        &quot;authentication&quot;: &quot;basicAuth&quot;,
+        &quot;resource&quot;: &quot;tableRecord&quot;,
+        &quot;operation&quot;: &quot;getAll&quot;,
+        &quot;tableName&quot;: &quot;=sys_journal_field&quot;,
+        &quot;returnAll&quot;: true,
+        &quot;options&quot;: {
+          &quot;sysparm_query&quot;: &quot;=element_id={{ $(&#x27;ServiceNow | Case Get | 3&#x27;).item.json.sys_id }}&quot;
+        }
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.serviceNowTool&quot;,
+      &quot;typeVersion&quot;: 1,
+      &quot;position&quot;: [
+        656,
+        480
+      ],
+      &quot;id&quot;: &quot;5c223985-f240-4027-a983-c0526a168607&quot;,
+      &quot;name&quot;: &quot;ServiceNow - Get Work Notes - 1&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;httpMethod&quot;: &quot;POST&quot;,
+        &quot;path&quot;: &quot;demo-ia-servicenow/notify&quot;,
+        &quot;authentication&quot;: &quot;basicAuth&quot;,
+        &quot;options&quot;: {}
+      },
+      &quot;id&quot;: &quot;10b8c468-bc81-4af4-a064-2e9d573b7689&quot;,
+      &quot;name&quot;: &quot;Webhook - Apizee Cloud&quot;,
+      &quot;type&quot;: &quot;n8n-nodes-base.webhook&quot;,
+      &quot;typeVersion&quot;: 2,
+      &quot;position&quot;: [
+        -1312,
+        592
+      ],
+      &quot;webhookId&quot;: &quot;253fe569-9065-428f-b4c7-44a3ef34ad0b&quot;,
+      &quot;credentials&quot;: {
+        &quot;httpBasicAuth&quot;: {
+          &quot;id&quot;: &quot;urHKHtlL3u1cWUH7&quot;,
+          &quot;name&quot;: &quot;Test - Form credential&quot;
+        }
+      }
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;rules&quot;: {
+          &quot;values&quot;: [
+            {
+              &quot;conditions&quot;: {
+                &quot;options&quot;: {
+                  &quot;caseSensitive&quot;: true,
+                  &quot;leftValue&quot;: &quot;&quot;,
+                  &quot;typeValidation&quot;: &quot;strict&quot;,
+                  &quot;version&quot;: 2
+                },
+                &quot;conditions&quot;: [
+                  {
+                    &quot;leftValue&quot;: &quot;={{ $json.body.object }}&quot;,
+                    &quot;rightValue&quot;: &quot;ticket&quot;,
+                    &quot;operator&quot;: {
+                      &quot;type&quot;: &quot;string&quot;,
+                      &quot;operation&quot;: &quot;equals&quot;
+                    },
+                    &quot;id&quot;: &quot;8ed1b17a-660f-4b48-bc39-ab03b9eb9d95&quot;
+                  }
+                ],
+                &quot;combinator&quot;: &quot;and&quot;
+              },
+              &quot;renameOutput&quot;: true,
+              &quot;outputKey&quot;: &quot;ticket&quot;
+            },
+            {
+              &quot;conditions&quot;: {
+                &quot;options&quot;: {
+                  &quot;caseSensitive&quot;: true,
+                  &quot;leftValue&quot;: &quot;&quot;,
+                  &quot;typeValidation&quot;: &quot;strict&quot;,
+                  &quot;version&quot;: 2
+                },
+                &quot;conditions&quot;: [
+                  {
+                    &quot;id&quot;: &quot;311f3e69-86f1-41b9-a694-532b4bbd8030&quot;,
+                    &quot;leftValue&quot;: &quot;={{ $json.body.object }}&quot;,
+                    &quot;rightValue&quot;: &quot;conversation&quot;,
+                    &quot;operator&quot;: {
+                      &quot;type&quot;: &quot;string&quot;,
+                      &quot;operation&quot;: &quot;equals&quot;,
+                      &quot;name&quot;: &quot;filter.operator.equals&quot;
+                    }
+                  }
+                ],
+                &quot;combinator&quot;: &quot;and&quot;
+              },
+              &quot;renameOutput&quot;: true,
+              &quot;outputKey&quot;: &quot;conversation&quot;
+            },
+            {
+              &quot;conditions&quot;: {
+                &quot;options&quot;: {
+                  &quot;caseSensitive&quot;: true,
+                  &quot;leftValue&quot;: &quot;&quot;,
+                  &quot;typeValidation&quot;: &quot;strict&quot;,
+                  &quot;version&quot;: 2
+                },
+                &quot;conditions&quot;: [
+                  {
+                    &quot;id&quot;: &quot;b583f9d2-da64-4de7-8e7f-bd841715d48a&quot;,
+                    &quot;leftValue&quot;: &quot;={{ $json.body.object }}&quot;,
+                    &quot;rightValue&quot;: &quot;media&quot;,
+                    &quot;operator&quot;: {
+                      &quot;type&quot;: &quot;string&quot;,
+                      &quot;operation&quot;: &quot;equals&quot;,
+                      &quot;name&quot;: &quot;filter.operator.equals&quot;
+                    }
+                  }
+                ],
+                &quot;combinator&quot;: &quot;and&quot;
+              },
+              &quot;renameOutput&quot;: true,
+              &quot;outputKey&quot;: &quot;media&quot;
+            },
+            {
+              &quot;conditions&quot;: {
+                &quot;options&quot;: {
+                  &quot;caseSensitive&quot;: true,
+                  &quot;leftValue&quot;: &quot;&quot;,
+                  &quot;typeValidation&quot;: &quot;strict&quot;,
+                  &quot;version&quot;: 2
+                },
+                &quot;conditions&quot;: [
+                  {
+                    &quot;id&quot;: &quot;86932701-3d53-4041-ad14-6b17b46e4b02&quot;,
+                    &quot;leftValue&quot;: &quot;={{ $json.body.object }}&quot;,
+                    &quot;rightValue&quot;: &quot;sms&quot;,
+                    &quot;operator&quot;: {
+                      &quot;type&quot;: &quot;string&quot;,
+                      &quot;operation&quot;: &quot;equals&quot;,
+                      &quot;name&quot;: &quot;filter.operator.equals&quot;
+                    }
+                  }
+                ],
+                &quot;combinator&quot;: &quot;and&quot;
+              },
+              &quot;renameOutput&quot;: true,
+              &quot;outputKey&quot;: &quot;sms&quot;
+            }
+          ]
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.switch&quot;,
+      &quot;typeVersion&quot;: 3.2,
+      &quot;position&quot;: [
+        -1104,
+        560
+      ],
+      &quot;id&quot;: &quot;d41257a9-7320-4c1c-ab79-85fc11070810&quot;,
+      &quot;name&quot;: &quot;Switch - Apizee object1&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;rules&quot;: {
+          &quot;values&quot;: [
+            {
+              &quot;conditions&quot;: {
+                &quot;options&quot;: {
+                  &quot;caseSensitive&quot;: true,
+                  &quot;leftValue&quot;: &quot;&quot;,
+                  &quot;typeValidation&quot;: &quot;strict&quot;,
+                  &quot;version&quot;: 2
+                },
+                &quot;conditions&quot;: [
+                  {
+                    &quot;leftValue&quot;: &quot;={{ $json.body.event }}&quot;,
+                    &quot;rightValue&quot;: &quot;create&quot;,
+                    &quot;operator&quot;: {
+                      &quot;type&quot;: &quot;string&quot;,
+                      &quot;operation&quot;: &quot;equals&quot;
+                    },
+                    &quot;id&quot;: &quot;8ed1b17a-660f-4b48-bc39-ab03b9eb9d95&quot;
+                  }
+                ],
+                &quot;combinator&quot;: &quot;and&quot;
+              },
+              &quot;renameOutput&quot;: true,
+              &quot;outputKey&quot;: &quot;create&quot;
+            },
+            {
+              &quot;conditions&quot;: {
+                &quot;options&quot;: {
+                  &quot;caseSensitive&quot;: true,
+                  &quot;leftValue&quot;: &quot;&quot;,
+                  &quot;typeValidation&quot;: &quot;strict&quot;,
+                  &quot;version&quot;: 2
+                },
+                &quot;conditions&quot;: [
+                  {
+                    &quot;id&quot;: &quot;311f3e69-86f1-41b9-a694-532b4bbd8030&quot;,
+                    &quot;leftValue&quot;: &quot;={{ $json.body.event }}&quot;,
+                    &quot;rightValue&quot;: &quot;update&quot;,
+                    &quot;operator&quot;: {
+                      &quot;type&quot;: &quot;string&quot;,
+                      &quot;operation&quot;: &quot;equals&quot;,
+                      &quot;name&quot;: &quot;filter.operator.equals&quot;
+                    }
+                  }
+                ],
+                &quot;combinator&quot;: &quot;and&quot;
+              },
+              &quot;renameOutput&quot;: true,
+              &quot;outputKey&quot;: &quot;update&quot;
+            },
+            {
+              &quot;conditions&quot;: {
+                &quot;options&quot;: {
+                  &quot;caseSensitive&quot;: true,
+                  &quot;leftValue&quot;: &quot;&quot;,
+                  &quot;typeValidation&quot;: &quot;strict&quot;,
+                  &quot;version&quot;: 2
+                },
+                &quot;conditions&quot;: [
+                  {
+                    &quot;id&quot;: &quot;b583f9d2-da64-4de7-8e7f-bd841715d48a&quot;,
+                    &quot;leftValue&quot;: &quot;={{ $json.body.event }}&quot;,
+                    &quot;rightValue&quot;: &quot;delete&quot;,
+                    &quot;operator&quot;: {
+                      &quot;type&quot;: &quot;string&quot;,
+                      &quot;operation&quot;: &quot;equals&quot;,
+                      &quot;name&quot;: &quot;filter.operator.equals&quot;
+                    }
+                  }
+                ],
+                &quot;combinator&quot;: &quot;and&quot;
+              },
+              &quot;renameOutput&quot;: true,
+              &quot;outputKey&quot;: &quot;delete&quot;
+            }
+          ]
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.switch&quot;,
+      &quot;typeVersion&quot;: 3.2,
+      &quot;position&quot;: [
+        -912,
+        288
+      ],
+      &quot;id&quot;: &quot;b08701e9-09fd-4ab6-9710-c610b6b89b48&quot;,
+      &quot;name&quot;: &quot;Switch - Apizee ticket event&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;rules&quot;: {
+          &quot;values&quot;: [
+            {
+              &quot;conditions&quot;: {
+                &quot;options&quot;: {
+                  &quot;caseSensitive&quot;: true,
+                  &quot;leftValue&quot;: &quot;&quot;,
+                  &quot;typeValidation&quot;: &quot;strict&quot;,
+                  &quot;version&quot;: 2
+                },
+                &quot;conditions&quot;: [
+                  {
+                    &quot;id&quot;: &quot;311f3e69-86f1-41b9-a694-532b4bbd8030&quot;,
+                    &quot;leftValue&quot;: &quot;={{ $json.body.event }}&quot;,
+                    &quot;rightValue&quot;: &quot;update&quot;,
+                    &quot;operator&quot;: {
+                      &quot;type&quot;: &quot;string&quot;,
+                      &quot;operation&quot;: &quot;equals&quot;,
+                      &quot;name&quot;: &quot;filter.operator.equals&quot;
+                    }
+                  }
+                ],
+                &quot;combinator&quot;: &quot;and&quot;
+              },
+              &quot;renameOutput&quot;: true,
+              &quot;outputKey&quot;: &quot;update&quot;
+            }
+          ]
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.switch&quot;,
+      &quot;typeVersion&quot;: 3.2,
+      &quot;position&quot;: [
+        -912,
+        480
+      ],
+      &quot;id&quot;: &quot;3b100257-de6a-4b83-8c86-a0547331e658&quot;,
+      &quot;name&quot;: &quot;Switch - Apizee conversation event&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;rules&quot;: {
+          &quot;values&quot;: [
+            {
+              &quot;conditions&quot;: {
+                &quot;options&quot;: {
+                  &quot;caseSensitive&quot;: true,
+                  &quot;leftValue&quot;: &quot;&quot;,
+                  &quot;typeValidation&quot;: &quot;strict&quot;,
+                  &quot;version&quot;: 2
+                },
+                &quot;conditions&quot;: [
+                  {
+                    &quot;leftValue&quot;: &quot;={{ $json.body.event }}&quot;,
+                    &quot;rightValue&quot;: &quot;create&quot;,
+                    &quot;operator&quot;: {
+                      &quot;type&quot;: &quot;string&quot;,
+                      &quot;operation&quot;: &quot;equals&quot;
+                    },
+                    &quot;id&quot;: &quot;8ed1b17a-660f-4b48-bc39-ab03b9eb9d95&quot;
+                  }
+                ],
+                &quot;combinator&quot;: &quot;and&quot;
+              },
+              &quot;renameOutput&quot;: true,
+              &quot;outputKey&quot;: &quot;create&quot;
+            },
+            {
+              &quot;conditions&quot;: {
+                &quot;options&quot;: {
+                  &quot;caseSensitive&quot;: true,
+                  &quot;leftValue&quot;: &quot;&quot;,
+                  &quot;typeValidation&quot;: &quot;strict&quot;,
+                  &quot;version&quot;: 2
+                },
+                &quot;conditions&quot;: [
+                  {
+                    &quot;id&quot;: &quot;311f3e69-86f1-41b9-a694-532b4bbd8030&quot;,
+                    &quot;leftValue&quot;: &quot;={{ $json.body.event }}&quot;,
+                    &quot;rightValue&quot;: &quot;update&quot;,
+                    &quot;operator&quot;: {
+                      &quot;type&quot;: &quot;string&quot;,
+                      &quot;operation&quot;: &quot;equals&quot;,
+                      &quot;name&quot;: &quot;filter.operator.equals&quot;
+                    }
+                  }
+                ],
+                &quot;combinator&quot;: &quot;and&quot;
+              },
+              &quot;renameOutput&quot;: true,
+              &quot;outputKey&quot;: &quot;update&quot;
+            },
+            {
+              &quot;conditions&quot;: {
+                &quot;options&quot;: {
+                  &quot;caseSensitive&quot;: true,
+                  &quot;leftValue&quot;: &quot;&quot;,
+                  &quot;typeValidation&quot;: &quot;strict&quot;,
+                  &quot;version&quot;: 2
+                },
+                &quot;conditions&quot;: [
+                  {
+                    &quot;id&quot;: &quot;b583f9d2-da64-4de7-8e7f-bd841715d48a&quot;,
+                    &quot;leftValue&quot;: &quot;={{ $json.body.event }}&quot;,
+                    &quot;rightValue&quot;: &quot;delete&quot;,
+                    &quot;operator&quot;: {
+                      &quot;type&quot;: &quot;string&quot;,
+                      &quot;operation&quot;: &quot;equals&quot;,
+                      &quot;name&quot;: &quot;filter.operator.equals&quot;
+                    }
+                  }
+                ],
+                &quot;combinator&quot;: &quot;and&quot;
+              },
+              &quot;renameOutput&quot;: true,
+              &quot;outputKey&quot;: &quot;delete&quot;
+            }
+          ]
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.switch&quot;,
+      &quot;typeVersion&quot;: 3.2,
+      &quot;position&quot;: [
+        -912,
+        688
+      ],
+      &quot;id&quot;: &quot;734a3abc-7a7d-42b9-aa51-d9d456317609&quot;,
+      &quot;name&quot;: &quot;Switch - Apizee media event&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;rules&quot;: {
+          &quot;values&quot;: [
+            {
+              &quot;conditions&quot;: {
+                &quot;options&quot;: {
+                  &quot;caseSensitive&quot;: true,
+                  &quot;leftValue&quot;: &quot;&quot;,
+                  &quot;typeValidation&quot;: &quot;strict&quot;,
+                  &quot;version&quot;: 2
+                },
+                &quot;conditions&quot;: [
+                  {
+                    &quot;leftValue&quot;: &quot;={{ $json.body.event }}&quot;,
+                    &quot;rightValue&quot;: &quot;create&quot;,
+                    &quot;operator&quot;: {
+                      &quot;type&quot;: &quot;string&quot;,
+                      &quot;operation&quot;: &quot;equals&quot;
+                    },
+                    &quot;id&quot;: &quot;8ed1b17a-660f-4b48-bc39-ab03b9eb9d95&quot;
+                  }
+                ],
+                &quot;combinator&quot;: &quot;and&quot;
+              },
+              &quot;renameOutput&quot;: true,
+              &quot;outputKey&quot;: &quot;create&quot;
+            },
+            {
+              &quot;conditions&quot;: {
+                &quot;options&quot;: {
+                  &quot;caseSensitive&quot;: true,
+                  &quot;leftValue&quot;: &quot;&quot;,
+                  &quot;typeValidation&quot;: &quot;strict&quot;,
+                  &quot;version&quot;: 2
+                },
+                &quot;conditions&quot;: [
+                  {
+                    &quot;id&quot;: &quot;311f3e69-86f1-41b9-a694-532b4bbd8030&quot;,
+                    &quot;leftValue&quot;: &quot;={{ $json.body.event }}&quot;,
+                    &quot;rightValue&quot;: &quot;update&quot;,
+                    &quot;operator&quot;: {
+                      &quot;type&quot;: &quot;string&quot;,
+                      &quot;operation&quot;: &quot;equals&quot;,
+                      &quot;name&quot;: &quot;filter.operator.equals&quot;
+                    }
+                  }
+                ],
+                &quot;combinator&quot;: &quot;and&quot;
+              },
+              &quot;renameOutput&quot;: true,
+              &quot;outputKey&quot;: &quot;update&quot;
+            }
+          ]
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.switch&quot;,
+      &quot;typeVersion&quot;: 3.2,
+      &quot;position&quot;: [
+        -912,
+        880
+      ],
+      &quot;id&quot;: &quot;b07a2966-3869-4dd5-add1-e57937bc891e&quot;,
+      &quot;name&quot;: &quot;Switch - Apizee sms event&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;url&quot;: &quot;=https://cloud.apizee.com/api/v3/tickets/{{ $(&#x27;Switch - Apizee ticket event&#x27;).item.json.body.objectId }}&quot;,
+        &quot;sendHeaders&quot;: true,
+        &quot;headerParameters&quot;: {
+          &quot;parameters&quot;: [
+            {
+              &quot;name&quot;: &quot;accept&quot;,
+              &quot;value&quot;: &quot;application/json&quot;
+            },
+            {
+              &quot;name&quot;: &quot;Authorization&quot;,
+              &quot;value&quot;: &quot;=Bearer {{ $(&#x27;Apizee Bearer Proxy - 1&#x27;).item.json.access_token }}&quot;
+            }
+          ]
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;id&quot;: &quot;c366df81-ae81-4534-9647-366b743987cf&quot;,
+      &quot;name&quot;: &quot;Apizee - Ticket get - 1&quot;,
+      &quot;type&quot;: &quot;n8n-nodes-base.httpRequest&quot;,
+      &quot;typeVersion&quot;: 4.2,
+      &quot;position&quot;: [
+        -480,
+        288
+      ]
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;url&quot;: &quot;=https://cloud.apizee.com/api/v3/tickets/{{ $(&#x27;Switch - Apizee media event&#x27;).item.json.body.props._parent.id }}&quot;,
+        &quot;sendQuery&quot;: true,
+        &quot;queryParameters&quot;: {
+          &quot;parameters&quot;: [
+            {}
+          ]
+        },
+        &quot;sendHeaders&quot;: true,
+        &quot;headerParameters&quot;: {
+          &quot;parameters&quot;: [
+            {
+              &quot;name&quot;: &quot;accept&quot;,
+              &quot;value&quot;: &quot;application/json&quot;
+            },
+            {
+              &quot;name&quot;: &quot;Authorization&quot;,
+              &quot;value&quot;: &quot;=Bearer {{ $(&#x27;Apizee Bearer Proxy - 2&#x27;).item.json.access_token }}&quot;
+            }
+          ]
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;id&quot;: &quot;52e0ac5a-447b-4f73-bb22-aa85299367c7&quot;,
+      &quot;name&quot;: &quot;Apizee - Ticket get - 2&quot;,
+      &quot;type&quot;: &quot;n8n-nodes-base.httpRequest&quot;,
+      &quot;typeVersion&quot;: 4.2,
+      &quot;position&quot;: [
+        -480,
+        688
+      ]
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;url&quot;: &quot;=https://cloud.apizee.com/api/v3/medias/{{ $(&#x27;Webhook - Apizee Cloud&#x27;).first().json.body.objectId }}&quot;,
+        &quot;sendHeaders&quot;: true,
+        &quot;headerParameters&quot;: {
+          &quot;parameters&quot;: [
+            {
+              &quot;name&quot;: &quot;accept&quot;,
+              &quot;value&quot;: &quot;application/json&quot;
+            },
+            {
+              &quot;name&quot;: &quot;Authorization&quot;,
+              &quot;value&quot;: &quot;=Bearer {{ $(&#x27;Apizee Bearer Proxy - 2&#x27;).item.json.access_token }}&quot;
+            }
+          ]
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;id&quot;: &quot;9b81fbd7-7542-493d-82e8-0b7a0fb072b7&quot;,
+      &quot;name&quot;: &quot;Apizee - Media get - 2&quot;,
+      &quot;type&quot;: &quot;n8n-nodes-base.httpRequest&quot;,
+      &quot;typeVersion&quot;: 4.2,
+      &quot;position&quot;: [
+        -256,
+        688
+      ],
+      &quot;retryOnFail&quot;: true,
+      &quot;maxTries&quot;: 5,
+      &quot;waitBetweenTries&quot;: 5000
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;url&quot;: &quot;=https://cloud.apizee.com/api/v3/tickets/{{ $(&#x27;Switch - Apizee ticket event&#x27;).item.json.body.objectId }}/medias&quot;,
+        &quot;sendQuery&quot;: true,
+        &quot;queryParameters&quot;: {
+          &quot;parameters&quot;: [
+            {
+              &quot;name&quot;: &quot;status&quot;,
+              &quot;value&quot;: &quot;uncompleted&quot;
+            }
+          ]
+        },
+        &quot;sendHeaders&quot;: true,
+        &quot;headerParameters&quot;: {
+          &quot;parameters&quot;: [
+            {
+              &quot;name&quot;: &quot;accept&quot;,
+              &quot;value&quot;: &quot;application/json&quot;
+            },
+            {
+              &quot;name&quot;: &quot;Authorization&quot;,
+              &quot;value&quot;: &quot;=Bearer {{ $(&#x27;Apizee Bearer Proxy - 1&#x27;).item.json.access_token }}&quot;
+            }
+          ]
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;id&quot;: &quot;d76387e0-eb78-4284-a078-98db443578d9&quot;,
+      &quot;name&quot;: &quot;Apizee - Media get - 1&quot;,
+      &quot;type&quot;: &quot;n8n-nodes-base.httpRequest&quot;,
+      &quot;typeVersion&quot;: 4.2,
+      &quot;position&quot;: [
+        -256,
+        288
+      ]
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;conditions&quot;: {
+          &quot;options&quot;: {
+            &quot;caseSensitive&quot;: true,
+            &quot;leftValue&quot;: &quot;&quot;,
+            &quot;typeValidation&quot;: &quot;strict&quot;,
+            &quot;version&quot;: 2
+          },
+          &quot;conditions&quot;: [
+            {
+              &quot;id&quot;: &quot;7495a14f-2d30-4054-b027-85595837de10&quot;,
+              &quot;leftValue&quot;: &quot;={{ $json.total }}&quot;,
+              &quot;rightValue&quot;: 0,
+              &quot;operator&quot;: {
+                &quot;type&quot;: &quot;number&quot;,
+                &quot;operation&quot;: &quot;equals&quot;
+              }
+            }
+          ],
+          &quot;combinator&quot;: &quot;and&quot;
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.if&quot;,
+      &quot;typeVersion&quot;: 2.2,
+      &quot;position&quot;: [
+        -32,
+        288
+      ],
+      &quot;id&quot;: &quot;9bcc4232-bf91-414a-8153-1bb8bd56de83&quot;,
+      &quot;name&quot;: &quot;If - total == 0&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;url&quot;: &quot;=https://cloud.apizee.com/api/v3/medias/{{ $(&#x27;Webhook - Apizee Cloud&#x27;).first().json.body.objectId }}/download&quot;,
+        &quot;sendHeaders&quot;: true,
+        &quot;headerParameters&quot;: {
+          &quot;parameters&quot;: [
+            {
+              &quot;name&quot;: &quot;accept&quot;,
+              &quot;value&quot;: &quot;application/json&quot;
+            },
+            {
+              &quot;name&quot;: &quot;Authorization&quot;,
+              &quot;value&quot;: &quot;=Bearer {{ $(&#x27;Apizee Bearer Proxy - 2&#x27;).item.json.access_token }}&quot;
+            }
+          ]
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;id&quot;: &quot;838b8cab-ce66-4599-ad9c-d573e5fab62c&quot;,
+      &quot;name&quot;: &quot;Apizee - Media download&quot;,
+      &quot;type&quot;: &quot;n8n-nodes-base.httpRequest&quot;,
+      &quot;typeVersion&quot;: 4.2,
+      &quot;position&quot;: [
+        -32,
+        688
+      ],
+      &quot;retryOnFail&quot;: true,
+      &quot;maxTries&quot;: 5,
+      &quot;waitBetweenTries&quot;: 5000
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;amount&quot;: 1,
+        &quot;unit&quot;: &quot;minutes&quot;
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.wait&quot;,
+      &quot;typeVersion&quot;: 1.1,
+      &quot;position&quot;: [
+        224,
+        288
+      ],
+      &quot;id&quot;: &quot;a93b6152-ec08-4da5-9f07-1f8c0f19ec37&quot;,
+      &quot;name&quot;: &quot;Wait - 1 minute&quot;,
+      &quot;webhookId&quot;: &quot;75a7aeae-2193-4178-84cc-02bf9d82c99b&quot;
+    },
+    {
+      &quot;parameters&quot;: {},
+      &quot;type&quot;: &quot;n8n-nodes-base.wait&quot;,
+      &quot;typeVersion&quot;: 1.1,
+      &quot;position&quot;: [
+        224,
+        432
+      ],
+      &quot;id&quot;: &quot;4f6126c1-1520-4ca8-ab60-a35839d4fabc&quot;,
+      &quot;name&quot;: &quot;Wait - 5 seconds&quot;,
+      &quot;webhookId&quot;: &quot;75a7aeae-2193-4178-84cc-02bf9d82c99b&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;authentication&quot;: &quot;basicAuth&quot;,
+        &quot;resource&quot;: &quot;tableRecord&quot;,
+        &quot;operation&quot;: &quot;update&quot;,
+        &quot;tableName&quot;: &quot;sn_customerservice_case&quot;,
+        &quot;id&quot;: &quot;={{ $(&#x27;ServiceNow | Case Get | 3&#x27;).first().json.sys_id }}&quot;,
+        &quot;fieldsToSend&quot;: {
+          &quot;field&quot;: [
+            {
+              &quot;column&quot;: &quot;=comments&quot;,
+              &quot;value&quot;: &quot;={{ $(&#x27;OpenAI - Troubleshooting&#x27;).first().json.message.content }}&quot;
+            }
+          ]
+        }
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.serviceNow&quot;,
+      &quot;typeVersion&quot;: 1,
+      &quot;position&quot;: [
+        816,
+        288
+      ],
+      &quot;id&quot;: &quot;67479b36-cdd9-4aec-a13c-8bd69a567ccc&quot;,
+      &quot;name&quot;: &quot;ServiceNow - Case Update&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;authentication&quot;: &quot;basicAuth&quot;,
+        &quot;resource&quot;: &quot;tableRecord&quot;,
+        &quot;operation&quot;: &quot;getAll&quot;,
+        &quot;tableName&quot;: &quot;sn_customerservice_case&quot;,
+        &quot;limit&quot;: 1,
+        &quot;options&quot;: {
+          &quot;sysparm_query&quot;: &quot;=number={{ $(&#x27;Apizee - Ticket get - 2&#x27;).item.json.reference }}&quot;
+        }
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.serviceNow&quot;,
+      &quot;typeVersion&quot;: 1,
+      &quot;position&quot;: [
+        320,
+        752
+      ],
+      &quot;id&quot;: &quot;67224283-e2ce-4cb9-8046-f54977a26cfe&quot;,
+      &quot;name&quot;: &quot;ServiceNow - Case Get&quot;,
+      &quot;alwaysOutputData&quot;: false
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;mode&quot;: &quot;chooseBranch&quot;,
+        &quot;numberInputs&quot;: 3
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.merge&quot;,
+      &quot;typeVersion&quot;: 3.1,
+      &quot;position&quot;: [
+        624,
+        688
+      ],
+      &quot;id&quot;: &quot;e2deed89-9c5b-4b86-930b-92648e69a828&quot;,
+      &quot;name&quot;: &quot;Merge&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;authentication&quot;: &quot;basicAuth&quot;,
+        &quot;resource&quot;: &quot;attachment&quot;,
+        &quot;tableName&quot;: &quot;sn_customerservice_case&quot;,
+        &quot;id&quot;: &quot;={{ $(&#x27;ServiceNow - Case Get&#x27;).first().json.sys_id }}&quot;,
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.serviceNow&quot;,
+      &quot;typeVersion&quot;: 1,
+      &quot;position&quot;: [
+        816,
+        704
+      ],
+      &quot;id&quot;: &quot;3b2e0443-6e1a-4fc0-ba2b-69c2beb68b7b&quot;,
+      &quot;name&quot;: &quot;ServiceNow - Attachment upload&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;conditions&quot;: {
+          &quot;options&quot;: {
+            &quot;caseSensitive&quot;: true,
+            &quot;leftValue&quot;: &quot;&quot;,
+            &quot;typeValidation&quot;: &quot;strict&quot;,
+            &quot;version&quot;: 2
+          },
+          &quot;conditions&quot;: [
+            {
+              &quot;id&quot;: &quot;7aaaac43-ba74-431e-89de-5bd61eda391c&quot;,
+              &quot;leftValue&quot;: &quot;={{ $(&#x27;Webhook - Apizee Cloud&#x27;).item.json.body.props.state }}&quot;,
+              &quot;rightValue&quot;: &quot;done&quot;,
+              &quot;operator&quot;: {
+                &quot;type&quot;: &quot;string&quot;,
+                &quot;operation&quot;: &quot;equals&quot;,
+                &quot;name&quot;: &quot;filter.operator.equals&quot;
+              }
+            }
+          ],
+          &quot;combinator&quot;: &quot;and&quot;
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.if&quot;,
+      &quot;typeVersion&quot;: 2.2,
+      &quot;position&quot;: [
+        -704,
+        288
+      ],
+      &quot;id&quot;: &quot;ed96ae12-5f1a-405d-b31f-b24a389508b9&quot;,
+      &quot;name&quot;: &quot;If - state == done&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;conditions&quot;: {
+          &quot;options&quot;: {
+            &quot;caseSensitive&quot;: true,
+            &quot;leftValue&quot;: &quot;&quot;,
+            &quot;typeValidation&quot;: &quot;strict&quot;,
+            &quot;version&quot;: 2
+          },
+          &quot;conditions&quot;: [
+            {
+              &quot;id&quot;: &quot;7aaaac43-ba74-431e-89de-5bd61eda391c&quot;,
+              &quot;leftValue&quot;: &quot;={{ $json.body.props.state }}&quot;,
+              &quot;rightValue&quot;: &quot;completed&quot;,
+              &quot;operator&quot;: {
+                &quot;type&quot;: &quot;string&quot;,
+                &quot;operation&quot;: &quot;equals&quot;,
+                &quot;name&quot;: &quot;filter.operator.equals&quot;
+              }
+            }
+          ],
+          &quot;combinator&quot;: &quot;and&quot;
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.if&quot;,
+      &quot;typeVersion&quot;: 2.2,
+      &quot;position&quot;: [
+        -704,
+        688
+      ],
+      &quot;id&quot;: &quot;3a782a73-d881-4c61-a717-01dc4917a8fa&quot;,
+      &quot;name&quot;: &quot;If - state == completed&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;resource&quot;: &quot;object&quot;,
+        &quot;operation&quot;: &quot;create&quot;,
+        &quot;bucketName&quot;: &quot;demo-bouygues-requests&quot;,
+        &quot;objectName&quot;: &quot;={{ $json.title }}&quot;,
+        &quot;updateProjection&quot;: &quot;noAcl&quot;,
+        &quot;createData&quot;: {},
+        &quot;createQuery&quot;: {},
+        &quot;encryptionHeaders&quot;: {},
+        &quot;requestOptions&quot;: {
+          &quot;timeout&quot;: 8000
+        }
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.googleCloudStorage&quot;,
+      &quot;typeVersion&quot;: 1,
+      &quot;position&quot;: [
+        224,
+        944
+      ],
+      &quot;id&quot;: &quot;c45d1e1d-5301-4485-b9aa-f1bd0ee0cc2b&quot;,
+      &quot;name&quot;: &quot;Google Cloud Storage - Store image&quot;,
+      &quot;retryOnFail&quot;: true,
+      &quot;waitBetweenTries&quot;: 5000
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;method&quot;: &quot;POST&quot;,
+        &quot;authentication&quot;: &quot;predefinedCredentialType&quot;,
+        &quot;nodeCredentialType&quot;: &quot;googleOAuth2Api&quot;,
+        &quot;sendHeaders&quot;: true,
+        &quot;headerParameters&quot;: {
+          &quot;parameters&quot;: [
+            {
+              &quot;name&quot;: &quot;Content-Type&quot;,
+              &quot;value&quot;: &quot;application/json&quot;
+            }
+          ]
+        },
+        &quot;sendBody&quot;: true,
+        &quot;specifyBody&quot;: &quot;json&quot;,
+        &quot;jsonBody&quot;: &quot;={\n  \&quot;systemInstruction\&quot;: {\n    \&quot;role\&quot;: \&quot;user\&quot;,\n    \&quot;parts\&quot;: [\n      {\n        \&quot;text\&quot;: \&quot;\\nYou are a a network engineer expert. Your role is to provide support to users.\\nA user called for issues with their network connectivity. You are asked to troubleshoot the issue.\\n\\nYou have to visually analyze photos and videos on their Internet router provided in input. You need to search for 2 types of informations:\\n- The sticker listing the identification of the router.\\n- The front panel of the router showing the status LEDs.\\n\\nFirst detect whether the media is showing the serial number or the front panel, or both, then analyze it accordingly. If the media shows something else, just state that you are not able to analyze it.\\n\\nWhen the media shows a serial number: You will output \\\&quot;Device identification\\\&quot;, then the SN, MAC and IMEI, one per line prefixed by a dash.\\n\\nWhen the media is the front panel of the router: You will output \\\&quot;Front panel LEDs\\\&quot;, the the color and status of each LED (ON, OFF, BLINKING), one per line prefixed by a dash.\\nOn the considered router, the LEDs and buttons are layed out as follows on the front panel(from bottom to top):\\n1. Round LED : Power\\n2. Round LED : Fiber\\n3. Round LED : Internet\\n4. Button : WPS\\n5. Bar LED : WiFi\\n6. Button : WiFi\\n7. Round LED : Phone\\n\\nWrite your answers under key: value form. For LED detection, output one line per LED. For Serial Number detection, output one line per identifier. Don&#x27;t use markdown formatting\&quot;\n      }\n    ]\n  },\n  \&quot;contents\&quot;: {\n    \&quot;role\&quot;: \&quot;user\&quot;,\n    \&quot;parts\&quot;: [\n      {\n        \&quot;fileData\&quot;: {\n          \&quot;mimeType\&quot;: {{ \&quot;\\\&quot;\&quot; + $json.contentType + \&quot;\\\&quot;\&quot; }},\n          \&quot;fileUri\&quot;: {{ \&quot;\\\&quot;\&quot; + \&quot;gs://\&quot; + $(&#x27;Google Cloud Storage - Store image&#x27;).item.json.bucket + \&quot;/\&quot; + $(&#x27;Google Cloud Storage - Store image&#x27;).item.json.name + \&quot;\\\&quot;\&quot; }}\n        }\n      },\n      {\n        \&quot;text\&quot;:\&quot;Analyze this image. Write your answer in french.\&quot;\n      }\n    ]\n  }\n}&quot;,
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.httpRequest&quot;,
+      &quot;typeVersion&quot;: 4.2,
+      &quot;position&quot;: [
+        432,
+        944
+      ],
+      &quot;id&quot;: &quot;8eeffa8b-1a19-421d-a760-daa5b1f33af6&quot;,
+      &quot;name&quot;: &quot;Gemini - Analyse image&quot;,
+      &quot;retryOnFail&quot;: true,
+      &quot;maxTries&quot;: 5,
+      &quot;waitBetweenTries&quot;: 2000
+    }
+  ],
+  &quot;connections&quot;: {
+    &quot;OpenAI - Device identification&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;ServiceNow - Case Update&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;ServiceNow - Get Work Notes - 1&quot;: {
+      &quot;ai_tool&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;OpenAI - Device identification&quot;,
+            &quot;type&quot;: &quot;ai_tool&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Webhook - Apizee Cloud&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Switch - Apizee object1&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Switch - Apizee object1&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Switch - Apizee ticket event&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ],
+        [
+          {
+            &quot;node&quot;: &quot;Switch - Apizee conversation event&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ],
+        [
+          {
+            &quot;node&quot;: &quot;Switch - Apizee media event&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ],
+        [
+          {
+            &quot;node&quot;: &quot;Switch - Apizee sms event&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Switch - Apizee ticket event&quot;: {
+      &quot;main&quot;: [
+        [],
+        [
+          {
+            &quot;node&quot;: &quot;If - state == done&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Switch - Apizee media event&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;If - state == completed&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ],
+        [
+          {
+            &quot;node&quot;: &quot;If - state == completed&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Apizee - Ticket get - 1&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Apizee - Media get - 1&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Apizee - Ticket get - 2&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Apizee - Media get - 2&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Apizee - Media get - 2&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Apizee - Media download&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Apizee - Media get - 1&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;If - total == 0&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;If - total == 0&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Wait - 1 minute&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ],
+        [
+          {
+            &quot;node&quot;: &quot;Wait - 5 seconds&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Apizee - Media download&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;ServiceNow - Case Get&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          },
+          {
+            &quot;node&quot;: &quot;Merge&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          },
+          {
+            &quot;node&quot;: &quot;Google Cloud Storage - Store image&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Wait - 1 minute&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;OpenAI - Device identification&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Wait - 5 seconds&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Apizee - Media get - 1&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;ServiceNow - Case Get&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Merge&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 1
+          }
+        ]
+      ]
+    },
+    &quot;Merge&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;ServiceNow - Attachment upload&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;ServiceNow - Attachment upload&quot;: {
+      &quot;main&quot;: [
+        []
+      ]
+    },
+    &quot;If - state == done&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Apizee - Ticket get - 1&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;If - state == completed&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Apizee - Ticket get - 2&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Google Cloud Storage - Store image&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Gemini - Analyse image&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Gemini - Analyse image&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Merge&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 2
+          }
+        ]
+      ]
+    }
+  }
+}
+" ></n8n-demo>
+	</body>
+</html>

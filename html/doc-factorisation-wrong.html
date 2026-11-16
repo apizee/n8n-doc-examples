@@ -1,0 +1,1028 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>doc-factorisation-wrong</title>
+	</head>
+	<body>
+		<script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs@2.0.0/webcomponents-loader.js"></script>
+		<script src="https://www.unpkg.com/lit@2.0.0-rc.2/polyfill-support.js"></script>
+		<script type="module" src="https://cdn.jsdelivr.net/npm/@n8n_io/n8n-demo-component/n8n-demo.bundled.js"></script>
+
+		<n8n-demo workflow="{
+  &quot;nodes&quot;: [
+    {
+      &quot;parameters&quot;: {
+        &quot;rule&quot;: {
+          &quot;interval&quot;: [
+            {
+              &quot;field&quot;: &quot;months&quot;,
+              &quot;triggerAtHour&quot;: 1,
+              &quot;triggerAtMinute&quot;: 5
+            }
+          ]
+        }
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.scheduleTrigger&quot;,
+      &quot;typeVersion&quot;: 1.2,
+      &quot;position&quot;: [
+        -96,
+        -432
+      ],
+      &quot;id&quot;: &quot;24190c24-fd63-4e65-abf6-fd59096d2d85&quot;,
+      &quot;name&quot;: &quot;Schedule Trigger&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;fromEmail&quot;: &quot;notifications@apizee.com&quot;,
+        &quot;toEmail&quot;: &quot;Emmanuel Thierry &lt;emmanuel.thierry@apizee.com&gt;&quot;,
+        &quot;subject&quot;: &quot;Données de facturation Apizee pour Odigo&quot;,
+        &quot;html&quot;: &quot;Bonjour,&lt;br /&gt;\n&lt;br /&gt;\nVeuillez trouver ci-joint les données de facturation Apizee pour Odigo.&lt;br /&gt;\n&lt;br /&gt;\nCordialement&lt;br /&gt;\nL&#x27;équipe Apizee&lt;br /&gt;\n\n&quot;,
+        &quot;options&quot;: {
+          &quot;appendAttribution&quot;: false,
+          &quot;attachments&quot;: &quot;data&quot;,
+          &quot;replyTo&quot;: &quot;emmanuel.thierry@apizee.com&quot;
+        }
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.emailSend&quot;,
+      &quot;typeVersion&quot;: 2.1,
+      &quot;position&quot;: [
+        1888,
+        -432
+      ],
+      &quot;id&quot;: &quot;043f2e58-0fa6-4b3a-984a-35ddbb3a1e4e&quot;,
+      &quot;name&quot;: &quot;Send email&quot;,
+      &quot;webhookId&quot;: &quot;041bc6d5-493e-45a0-ba87-2e99f6840efa&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;jsCode&quot;: &quot;// Date calculations assume this workflow was scheduled the first day of the month after midnight\nvar invocation = new Date($input.first().json.timestamp);\n\n// Get the first day of the previous month\nvar start = new Date(invocation.getFullYear(), invocation.getMonth()-1, 1).toISOString().split(\&quot;.\&quot;)[0] + \&quot;Z\&quot;;\n\n// Get the last day of the previous month\nvar end = new Date(invocation.getFullYear(), invocation.getMonth(), 0).toISOString().split(\&quot;.\&quot;)[0] + \&quot;Z\&quot;;\n\n// Build the filename with the last day of the previous month\nvar filename = \&quot;Apizee\&quot; + new Date(invocation.getFullYear(), invocation.getMonth(), 0).toISOString().split(\&quot;T\&quot;)[0].replaceAll(\&quot;-\&quot;,\&quot;\&quot;) + \&quot;.csv\&quot;;\n\nreturn {\&quot;start\&quot;: start, \&quot;end\&quot;: end, \&quot;filename\&quot;: filename};&quot;
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.code&quot;,
+      &quot;typeVersion&quot;: 2,
+      &quot;position&quot;: [
+        112,
+        -432
+      ],
+      &quot;id&quot;: &quot;d62580d1-5f39-40cf-9571-161fab35babd&quot;,
+      &quot;name&quot;: &quot;Compute reference period&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;formTitle&quot;: &quot;Get past stats&quot;,
+        &quot;formFields&quot;: {
+          &quot;values&quot;: [
+            {
+              &quot;fieldLabel&quot;: &quot;Start of period&quot;,
+              &quot;fieldType&quot;: &quot;date&quot;,
+              &quot;requiredField&quot;: true
+            },
+            {
+              &quot;fieldLabel&quot;: &quot;End of period&quot;,
+              &quot;fieldType&quot;: &quot;date&quot;,
+              &quot;requiredField&quot;: true
+            }
+          ]
+        },
+        &quot;responseMode&quot;: &quot;lastNode&quot;,
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.formTrigger&quot;,
+      &quot;typeVersion&quot;: 2.3,
+      &quot;position&quot;: [
+        -96,
+        -208
+      ],
+      &quot;id&quot;: &quot;05203884-2202-439e-a7e8-dbc9b0f37bdc&quot;,
+      &quot;name&quot;: &quot;Call workflow - On form submission&quot;,
+      &quot;webhookId&quot;: &quot;8ff5d69e-373f-4808-baa1-d8263d3907f8&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;operation&quot;: &quot;completion&quot;,
+        &quot;respondWith&quot;: &quot;returnBinary&quot;,
+        &quot;completionTitle&quot;: &quot;Report&quot;,
+        &quot;completionMessage&quot;: &quot;Report&quot;,
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.form&quot;,
+      &quot;typeVersion&quot;: 2.3,
+      &quot;position&quot;: [
+        2112,
+        -304
+      ],
+      &quot;id&quot;: &quot;27ca8d4a-e312-4705-b542-91edce3b408f&quot;,
+      &quot;name&quot;: &quot;Call workflow - Form ending&quot;,
+      &quot;webhookId&quot;: &quot;b33c8edd-ce40-4be9-b7bf-d62b50ec8222&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;conditions&quot;: {
+          &quot;options&quot;: {
+            &quot;caseSensitive&quot;: true,
+            &quot;leftValue&quot;: &quot;&quot;,
+            &quot;typeValidation&quot;: &quot;strict&quot;,
+            &quot;version&quot;: 2
+          },
+          &quot;conditions&quot;: [
+            {
+              &quot;id&quot;: &quot;ba46239c-228d-4f2a-9094-4872ec87d5fb&quot;,
+              &quot;leftValue&quot;: &quot;={{ $binary.data }}&quot;,
+              &quot;rightValue&quot;: &quot;&quot;,
+              &quot;operator&quot;: {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;operation&quot;: &quot;exists&quot;,
+                &quot;singleValue&quot;: true
+              }
+            }
+          ],
+          &quot;combinator&quot;: &quot;and&quot;
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.if&quot;,
+      &quot;typeVersion&quot;: 2.2,
+      &quot;position&quot;: [
+        1888,
+        -208
+      ],
+      &quot;id&quot;: &quot;88f55651-7361-4dc0-89e1-a5407a9e2bd8&quot;,
+      &quot;name&quot;: &quot;If - File exists&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;operation&quot;: &quot;completion&quot;,
+        &quot;completionTitle&quot;: &quot;Error in workflow&quot;,
+        &quot;completionMessage&quot;: &quot;An error occurred during workflow execution, see the matrix chan for details&quot;,
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.form&quot;,
+      &quot;typeVersion&quot;: 2.3,
+      &quot;position&quot;: [
+        2112,
+        -112
+      ],
+      &quot;id&quot;: &quot;f3a7af63-4183-47fe-ae34-d2babc8d5dde&quot;,
+      &quot;name&quot;: &quot;Call workflow - Form ending with error&quot;,
+      &quot;webhookId&quot;: &quot;7978ddf4-bbc4-415a-b13e-72cd7ade0a0d&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;path&quot;: &quot;561c69dd-ca74-4942-8f04-b9ab086a6c22&quot;,
+        &quot;responseMode&quot;: &quot;responseNode&quot;,
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.webhook&quot;,
+      &quot;typeVersion&quot;: 2.1,
+      &quot;position&quot;: [
+        -96,
+        32
+      ],
+      &quot;id&quot;: &quot;386c489b-7d85-42da-9bfc-d46d6e6b51d9&quot;,
+      &quot;name&quot;: &quot;Webhook&quot;,
+      &quot;webhookId&quot;: &quot;561c69dd-ca74-4942-8f04-b9ab086a6c22&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.respondToWebhook&quot;,
+      &quot;typeVersion&quot;: 1.5,
+      &quot;position&quot;: [
+        1888,
+        32
+      ],
+      &quot;id&quot;: &quot;d39d387a-9fa4-4e55-a2bc-54b11965bf8e&quot;,
+      &quot;name&quot;: &quot;Respond to Webhook&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;method&quot;: &quot;POST&quot;,
+        &quot;url&quot;: &quot;=https://cloud.apizee.com/api/v3/token&quot;,
+        &quot;sendBody&quot;: true,
+        &quot;bodyParameters&quot;: {
+          &quot;parameters&quot;: [
+            {
+              &quot;name&quot;: &quot;grant_type&quot;,
+              &quot;value&quot;: &quot;password&quot;
+            },
+            {
+              &quot;name&quot;: &quot;username&quot;,
+              &quot;value&quot;: &quot;={{ $(&#x27;Get row(s)&#x27;).item.json.apizee_username}}&quot;
+            },
+            {
+              &quot;name&quot;: &quot;password&quot;,
+              &quot;value&quot;: &quot;={{ $json.decryptedPassword }}&quot;
+            }
+          ]
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.httpRequest&quot;,
+      &quot;typeVersion&quot;: 4.2,
+      &quot;position&quot;: [
+        544,
+        -432
+      ],
+      &quot;id&quot;: &quot;3d69733b-ad06-435a-8754-4ed5ebc6f5bd&quot;,
+      &quot;name&quot;: &quot;Cloud GET Token1&quot;,
+      &quot;onError&quot;: &quot;continueErrorOutput&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;mode&quot;: &quot;runOnceForEachItem&quot;,
+        &quot;jsCode&quot;: &quot;// Javascript Date() methods are garbage, use String instead\nvar dateparts = $(&#x27;When Executed by Another Workflow&#x27;).first().json.start.split(\&quot;T\&quot;)[0].split(\&quot;-\&quot;);\nvar date = dateparts[2] + \&quot;/\&quot; + dateparts[1] + \&quot;/\&quot; + dateparts[0];\n\n// On fait un -1 pour enlever le compte de service du nombre total d&#x27;utilisateur.\nreturn {\n  \&quot;data\&quot;:[\n    {\n      \&quot;Type\&quot;: \&quot;Users\&quot;,\n      \&quot;Date\&quot;: date,\n      \&quot;Project\&quot;: $(&#x27;Get row(s)&#x27;).item.json.odigo_projectid,\n      \&quot;SubEntity\&quot;: $(&#x27;Get row(s)&#x27;).item.json.odigo_subentityid,\n      \&quot;Quantity\&quot;: $(&#x27;Cloud GET enterprise users&#x27;).item.json.users.length - 1\n    },{\n      \&quot;Type\&quot;: \&quot;Tickets\&quot;,\n      \&quot;Date\&quot;: date,\n      \&quot;Project\&quot;: $(&#x27;Get row(s)&#x27;).item.json.odigo_projectid,\n      \&quot;SubEntity\&quot;: $(&#x27;Get row(s)&#x27;).item.json.odigo_subentityid,\n      \&quot;Quantity\&quot;: $(&#x27;Cloud GET enterprise ticket report&#x27;).item.json.metrics.nb_ticket\n    }\n  ]\n}&quot;
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.code&quot;,
+      &quot;typeVersion&quot;: 2,
+      &quot;position&quot;: [
+        1056,
+        -432
+      ],
+      &quot;id&quot;: &quot;2452cba0-fa55-4991-b5ab-03f737e97193&quot;,
+      &quot;name&quot;: &quot;Build record&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;fieldToSplitOut&quot;: &quot;data&quot;,
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.splitOut&quot;,
+      &quot;typeVersion&quot;: 1,
+      &quot;position&quot;: [
+        1488,
+        -432
+      ],
+      &quot;id&quot;: &quot;0db02a46-f90f-4481-8d4d-c0e956fd743f&quot;,
+      &quot;name&quot;: &quot;Split Out&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;conditions&quot;: {
+          &quot;options&quot;: {
+            &quot;caseSensitive&quot;: true,
+            &quot;leftValue&quot;: &quot;&quot;,
+            &quot;typeValidation&quot;: &quot;strict&quot;,
+            &quot;version&quot;: 2
+          },
+          &quot;conditions&quot;: [
+            {
+              &quot;id&quot;: &quot;bd2c016b-405d-4c0d-a16e-1fc1559ab8dc&quot;,
+              &quot;leftValue&quot;: &quot;={{ $(\&quot;Build record\&quot;).all() }}&quot;,
+              &quot;rightValue&quot;: &quot;={{ $(&#x27;Get row(s)&#x27;).all().length }}&quot;,
+              &quot;operator&quot;: {
+                &quot;type&quot;: &quot;array&quot;,
+                &quot;operation&quot;: &quot;lengthEquals&quot;,
+                &quot;rightType&quot;: &quot;number&quot;
+              }
+            }
+          ],
+          &quot;combinator&quot;: &quot;and&quot;
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.if&quot;,
+      &quot;typeVersion&quot;: 2.2,
+      &quot;position&quot;: [
+        1280,
+        -432
+      ],
+      &quot;id&quot;: &quot;4a2268f9-133f-40dd-8136-23cb5c70a9b1&quot;,
+      &quot;name&quot;: &quot;If - Dump is complete&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;binaryPropertyName&quot;: &quot;=data&quot;,
+        &quot;options&quot;: {
+          &quot;delimiter&quot;: &quot;;&quot;,
+          &quot;fileName&quot;: &quot;={{ $(&#x27;When Executed by Another Workflow&#x27;).first().json.filename }}&quot;
+        }
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.convertToFile&quot;,
+      &quot;typeVersion&quot;: 1.1,
+      &quot;position&quot;: [
+        1696,
+        -432
+      ],
+      &quot;id&quot;: &quot;10399924-7be6-4b9a-915b-c8ae07745c96&quot;,
+      &quot;name&quot;: &quot;Convert to File&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;operation&quot;: &quot;get&quot;,
+        &quot;dataTableId&quot;: {
+          &quot;__rl&quot;: true,
+          &quot;value&quot;: &quot;vIaSPrutvVInKMXv&quot;,
+          &quot;mode&quot;: &quot;list&quot;,
+          &quot;cachedResultName&quot;: &quot;[ODIGO] Apizee Cloud credentials&quot;,
+          &quot;cachedResultUrl&quot;: &quot;/projects/hLqHPc4e1dusTDAu/datatables/vIaSPrutvVInKMXv&quot;
+        },
+        &quot;matchType&quot;: &quot;allConditions&quot;,
+        &quot;filters&quot;: {
+          &quot;conditions&quot;: [
+            {
+              &quot;keyName&quot;: &quot;active&quot;,
+              &quot;condition&quot;: &quot;isTrue&quot;
+            }
+          ]
+        },
+        &quot;returnAll&quot;: true
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.dataTable&quot;,
+      &quot;typeVersion&quot;: 1,
+      &quot;position&quot;: [
+        320,
+        -432
+      ],
+      &quot;id&quot;: &quot;514f67db-f008-4d47-838c-ac14b9c842ab&quot;,
+      &quot;name&quot;: &quot;Get row(s)&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;url&quot;: &quot;https://cloud.apizee.com/api/v3/enterprises/info&quot;,
+        &quot;sendQuery&quot;: true,
+        &quot;queryParameters&quot;: {
+          &quot;parameters&quot;: [
+            {
+              &quot;name&quot;: &quot;limit&quot;,
+              &quot;value&quot;: &quot;1&quot;
+            }
+          ]
+        },
+        &quot;sendHeaders&quot;: true,
+        &quot;headerParameters&quot;: {
+          &quot;parameters&quot;: [
+            {
+              &quot;name&quot;: &quot;Authorization&quot;,
+              &quot;value&quot;: &quot;=Bearer {{ $json.access_token }}&quot;
+            }
+          ]
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.httpRequest&quot;,
+      &quot;typeVersion&quot;: 4.2,
+      &quot;position&quot;: [
+        816,
+        -432
+      ],
+      &quot;id&quot;: &quot;142fad0c-785c-40bf-9625-cccf369da7af&quot;,
+      &quot;name&quot;: &quot;Cloud GET enterprise users&quot;,
+      &quot;onError&quot;: &quot;continueErrorOutput&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;method&quot;: &quot;POST&quot;,
+        &quot;url&quot;: &quot;=https://cloud.apizee.com/api/v3/token&quot;,
+        &quot;sendBody&quot;: true,
+        &quot;bodyParameters&quot;: {
+          &quot;parameters&quot;: [
+            {
+              &quot;name&quot;: &quot;grant_type&quot;,
+              &quot;value&quot;: &quot;password&quot;
+            },
+            {
+              &quot;name&quot;: &quot;username&quot;,
+              &quot;value&quot;: &quot;={{ $(&#x27;Get row(s)1&#x27;).item.json.apizee_username}}&quot;
+            },
+            {
+              &quot;name&quot;: &quot;password&quot;,
+              &quot;value&quot;: &quot;={{ $json.decryptedPassword }}&quot;
+            }
+          ]
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.httpRequest&quot;,
+      &quot;typeVersion&quot;: 4.2,
+      &quot;position&quot;: [
+        544,
+        -208
+      ],
+      &quot;id&quot;: &quot;56ee3215-b193-4021-8cd8-c2ec8ace20d6&quot;,
+      &quot;name&quot;: &quot;Cloud GET Token&quot;,
+      &quot;onError&quot;: &quot;continueErrorOutput&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;mode&quot;: &quot;runOnceForEachItem&quot;,
+        &quot;jsCode&quot;: &quot;// Javascript Date() methods are garbage, use String instead\nvar dateparts = $(&#x27;When Executed by Another Workflow&#x27;).first().json.start.split(\&quot;T\&quot;)[0].split(\&quot;-\&quot;);\nvar date = dateparts[2] + \&quot;/\&quot; + dateparts[1] + \&quot;/\&quot; + dateparts[0];\n\n// On fait un -1 pour enlever le compte de service du nombre total d&#x27;utilisateur.\nreturn {\n  \&quot;data\&quot;:[\n    {\n      \&quot;Type\&quot;: \&quot;Users\&quot;,\n      \&quot;Date\&quot;: date,\n      \&quot;Project\&quot;: $(&#x27;Get row(s)1&#x27;).item.json.odigo_projectid,\n      \&quot;SubEntity\&quot;: $(&#x27;Get row(s)1&#x27;).item.json.odigo_subentityid,\n      \&quot;Quantity\&quot;: $(&#x27;Cloud GET enterprise users1&#x27;).item.json.users.length - 1\n    },{\n      \&quot;Type\&quot;: \&quot;Tickets\&quot;,\n      \&quot;Date\&quot;: date,\n      \&quot;Project\&quot;: $(&#x27;Get row(s)1&#x27;).item.json.odigo_projectid,\n      \&quot;SubEntity\&quot;: $(&#x27;Get row(s)1&#x27;).item.json.odigo_subentityid,\n      \&quot;Quantity\&quot;: $(&#x27;Cloud GET enterprise ticket report&#x27;).item.json.metrics.nb_ticket\n    }\n  ]\n}&quot;
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.code&quot;,
+      &quot;typeVersion&quot;: 2,
+      &quot;position&quot;: [
+        1056,
+        -208
+      ],
+      &quot;id&quot;: &quot;bf0324c3-e2a0-4640-bcd3-fe16a9a50228&quot;,
+      &quot;name&quot;: &quot;Build record1&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;fieldToSplitOut&quot;: &quot;data&quot;,
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.splitOut&quot;,
+      &quot;typeVersion&quot;: 1,
+      &quot;position&quot;: [
+        1488,
+        -208
+      ],
+      &quot;id&quot;: &quot;df8edd64-1ee3-4dfd-8b9f-fbaf3f3071d8&quot;,
+      &quot;name&quot;: &quot;Split Out1&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;conditions&quot;: {
+          &quot;options&quot;: {
+            &quot;caseSensitive&quot;: true,
+            &quot;leftValue&quot;: &quot;&quot;,
+            &quot;typeValidation&quot;: &quot;strict&quot;,
+            &quot;version&quot;: 2
+          },
+          &quot;conditions&quot;: [
+            {
+              &quot;id&quot;: &quot;bd2c016b-405d-4c0d-a16e-1fc1559ab8dc&quot;,
+              &quot;leftValue&quot;: &quot;={{ $(\&quot;Build record1\&quot;).all() }}&quot;,
+              &quot;rightValue&quot;: &quot;={{ $(&#x27;Get row(s)1&#x27;).all().length }}&quot;,
+              &quot;operator&quot;: {
+                &quot;type&quot;: &quot;array&quot;,
+                &quot;operation&quot;: &quot;lengthEquals&quot;,
+                &quot;rightType&quot;: &quot;number&quot;
+              }
+            }
+          ],
+          &quot;combinator&quot;: &quot;and&quot;
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.if&quot;,
+      &quot;typeVersion&quot;: 2.2,
+      &quot;position&quot;: [
+        1280,
+        -208
+      ],
+      &quot;id&quot;: &quot;42491183-cfef-4ba2-b51a-798b3901b756&quot;,
+      &quot;name&quot;: &quot;If - Dump is complete1&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;binaryPropertyName&quot;: &quot;=data&quot;,
+        &quot;options&quot;: {
+          &quot;delimiter&quot;: &quot;;&quot;,
+          &quot;fileName&quot;: &quot;={{ $(&#x27;When Executed by Another Workflow&#x27;).first().json.filename }}&quot;
+        }
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.convertToFile&quot;,
+      &quot;typeVersion&quot;: 1.1,
+      &quot;position&quot;: [
+        1696,
+        -208
+      ],
+      &quot;id&quot;: &quot;4e16803c-2fff-4bb8-bf00-ec13fcdfdfb7&quot;,
+      &quot;name&quot;: &quot;Convert to File1&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;operation&quot;: &quot;get&quot;,
+        &quot;dataTableId&quot;: {
+          &quot;__rl&quot;: true,
+          &quot;value&quot;: &quot;vIaSPrutvVInKMXv&quot;,
+          &quot;mode&quot;: &quot;list&quot;,
+          &quot;cachedResultName&quot;: &quot;[ODIGO] Apizee Cloud credentials&quot;,
+          &quot;cachedResultUrl&quot;: &quot;/projects/hLqHPc4e1dusTDAu/datatables/vIaSPrutvVInKMXv&quot;
+        },
+        &quot;matchType&quot;: &quot;allConditions&quot;,
+        &quot;filters&quot;: {
+          &quot;conditions&quot;: [
+            {
+              &quot;keyName&quot;: &quot;active&quot;,
+              &quot;condition&quot;: &quot;isTrue&quot;
+            }
+          ]
+        },
+        &quot;returnAll&quot;: true
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.dataTable&quot;,
+      &quot;typeVersion&quot;: 1,
+      &quot;position&quot;: [
+        320,
+        -208
+      ],
+      &quot;id&quot;: &quot;e6282d80-f9f8-487e-8082-121e953553de&quot;,
+      &quot;name&quot;: &quot;Get row(s)1&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;url&quot;: &quot;https://cloud.apizee.com/api/v3/enterprises/info&quot;,
+        &quot;sendQuery&quot;: true,
+        &quot;queryParameters&quot;: {
+          &quot;parameters&quot;: [
+            {
+              &quot;name&quot;: &quot;limit&quot;,
+              &quot;value&quot;: &quot;1&quot;
+            }
+          ]
+        },
+        &quot;sendHeaders&quot;: true,
+        &quot;headerParameters&quot;: {
+          &quot;parameters&quot;: [
+            {
+              &quot;name&quot;: &quot;Authorization&quot;,
+              &quot;value&quot;: &quot;=Bearer {{ $json.access_token }}&quot;
+            }
+          ]
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.httpRequest&quot;,
+      &quot;typeVersion&quot;: 4.2,
+      &quot;position&quot;: [
+        816,
+        -208
+      ],
+      &quot;id&quot;: &quot;5fbcf4f2-fe3b-4796-af72-394e50530d60&quot;,
+      &quot;name&quot;: &quot;Cloud GET enterprise users1&quot;,
+      &quot;onError&quot;: &quot;continueErrorOutput&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;method&quot;: &quot;POST&quot;,
+        &quot;url&quot;: &quot;=https://cloud.apizee.com/api/v3/token&quot;,
+        &quot;sendBody&quot;: true,
+        &quot;bodyParameters&quot;: {
+          &quot;parameters&quot;: [
+            {
+              &quot;name&quot;: &quot;grant_type&quot;,
+              &quot;value&quot;: &quot;password&quot;
+            },
+            {
+              &quot;name&quot;: &quot;username&quot;,
+              &quot;value&quot;: &quot;={{ $(&#x27;Get row(s)2&#x27;).item.json.apizee_username}}&quot;
+            },
+            {
+              &quot;name&quot;: &quot;password&quot;,
+              &quot;value&quot;: &quot;={{ $json.decryptedPassword }}&quot;
+            }
+          ]
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.httpRequest&quot;,
+      &quot;typeVersion&quot;: 4.2,
+      &quot;position&quot;: [
+        544,
+        32
+      ],
+      &quot;id&quot;: &quot;f865c1f1-a1ee-472d-b532-ba5d880f416a&quot;,
+      &quot;name&quot;: &quot;Cloud GET Token2&quot;,
+      &quot;onError&quot;: &quot;continueErrorOutput&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;mode&quot;: &quot;runOnceForEachItem&quot;,
+        &quot;jsCode&quot;: &quot;// Javascript Date() methods are garbage, use String instead\nvar dateparts = $(&#x27;When Executed by Another Workflow&#x27;).first().json.start.split(\&quot;T\&quot;)[0].split(\&quot;-\&quot;);\nvar date = dateparts[2] + \&quot;/\&quot; + dateparts[1] + \&quot;/\&quot; + dateparts[0];\n\n// On fait un -1 pour enlever le compte de service du nombre total d&#x27;utilisateur.\nreturn {\n  \&quot;data\&quot;:[\n    {\n      \&quot;Type\&quot;: \&quot;Users\&quot;,\n      \&quot;Date\&quot;: date,\n      \&quot;Project\&quot;: $(&#x27;Get row(s)2&#x27;).item.json.odigo_projectid,\n      \&quot;SubEntity\&quot;: $(&#x27;Get row(s)2&#x27;).item.json.odigo_subentityid,\n      \&quot;Quantity\&quot;: $(&#x27;Cloud GET enterprise users2&#x27;).item.json.users.length - 1\n    },{\n      \&quot;Type\&quot;: \&quot;Tickets\&quot;,\n      \&quot;Date\&quot;: date,\n      \&quot;Project\&quot;: $(&#x27;Get row(s)2&#x27;).item.json.odigo_projectid,\n      \&quot;SubEntity\&quot;: $(&#x27;Get row(s)2&#x27;).item.json.odigo_subentityid,\n      \&quot;Quantity\&quot;: $(&#x27;Cloud GET enterprise ticket report&#x27;).item.json.metrics.nb_ticket\n    }\n  ]\n}&quot;
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.code&quot;,
+      &quot;typeVersion&quot;: 2,
+      &quot;position&quot;: [
+        1056,
+        32
+      ],
+      &quot;id&quot;: &quot;6ec92cd6-5fd6-4732-bb5c-81790e6016a8&quot;,
+      &quot;name&quot;: &quot;Build record2&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;fieldToSplitOut&quot;: &quot;data&quot;,
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.splitOut&quot;,
+      &quot;typeVersion&quot;: 1,
+      &quot;position&quot;: [
+        1488,
+        32
+      ],
+      &quot;id&quot;: &quot;440b2993-6e5b-413a-90de-775d2e5e9961&quot;,
+      &quot;name&quot;: &quot;Split Out2&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;conditions&quot;: {
+          &quot;options&quot;: {
+            &quot;caseSensitive&quot;: true,
+            &quot;leftValue&quot;: &quot;&quot;,
+            &quot;typeValidation&quot;: &quot;strict&quot;,
+            &quot;version&quot;: 2
+          },
+          &quot;conditions&quot;: [
+            {
+              &quot;id&quot;: &quot;bd2c016b-405d-4c0d-a16e-1fc1559ab8dc&quot;,
+              &quot;leftValue&quot;: &quot;={{ $(\&quot;Build record2\&quot;).all() }}&quot;,
+              &quot;rightValue&quot;: &quot;={{ $(&#x27;Get row(s)2&#x27;).all().length }}&quot;,
+              &quot;operator&quot;: {
+                &quot;type&quot;: &quot;array&quot;,
+                &quot;operation&quot;: &quot;lengthEquals&quot;,
+                &quot;rightType&quot;: &quot;number&quot;
+              }
+            }
+          ],
+          &quot;combinator&quot;: &quot;and&quot;
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.if&quot;,
+      &quot;typeVersion&quot;: 2.2,
+      &quot;position&quot;: [
+        1280,
+        32
+      ],
+      &quot;id&quot;: &quot;d1116a44-2ff4-4792-9a00-29ffe7e375f7&quot;,
+      &quot;name&quot;: &quot;If - Dump is complete2&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;binaryPropertyName&quot;: &quot;=data&quot;,
+        &quot;options&quot;: {
+          &quot;delimiter&quot;: &quot;;&quot;,
+          &quot;fileName&quot;: &quot;={{ $(&#x27;When Executed by Another Workflow&#x27;).first().json.filename }}&quot;
+        }
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.convertToFile&quot;,
+      &quot;typeVersion&quot;: 1.1,
+      &quot;position&quot;: [
+        1696,
+        32
+      ],
+      &quot;id&quot;: &quot;6f30b0d2-1cf9-467a-8512-3ad9ea0ae183&quot;,
+      &quot;name&quot;: &quot;Convert to File2&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;operation&quot;: &quot;get&quot;,
+        &quot;dataTableId&quot;: {
+          &quot;__rl&quot;: true,
+          &quot;value&quot;: &quot;vIaSPrutvVInKMXv&quot;,
+          &quot;mode&quot;: &quot;list&quot;,
+          &quot;cachedResultName&quot;: &quot;[ODIGO] Apizee Cloud credentials&quot;,
+          &quot;cachedResultUrl&quot;: &quot;/projects/hLqHPc4e1dusTDAu/datatables/vIaSPrutvVInKMXv&quot;
+        },
+        &quot;matchType&quot;: &quot;allConditions&quot;,
+        &quot;filters&quot;: {
+          &quot;conditions&quot;: [
+            {
+              &quot;keyName&quot;: &quot;active&quot;,
+              &quot;condition&quot;: &quot;isTrue&quot;
+            }
+          ]
+        },
+        &quot;returnAll&quot;: true
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.dataTable&quot;,
+      &quot;typeVersion&quot;: 1,
+      &quot;position&quot;: [
+        320,
+        32
+      ],
+      &quot;id&quot;: &quot;58a17464-3093-406a-b530-ababd2039d6e&quot;,
+      &quot;name&quot;: &quot;Get row(s)2&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;url&quot;: &quot;https://cloud.apizee.com/api/v3/enterprises/info&quot;,
+        &quot;sendQuery&quot;: true,
+        &quot;queryParameters&quot;: {
+          &quot;parameters&quot;: [
+            {
+              &quot;name&quot;: &quot;limit&quot;,
+              &quot;value&quot;: &quot;1&quot;
+            }
+          ]
+        },
+        &quot;sendHeaders&quot;: true,
+        &quot;headerParameters&quot;: {
+          &quot;parameters&quot;: [
+            {
+              &quot;name&quot;: &quot;Authorization&quot;,
+              &quot;value&quot;: &quot;=Bearer {{ $json.access_token }}&quot;
+            }
+          ]
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.httpRequest&quot;,
+      &quot;typeVersion&quot;: 4.2,
+      &quot;position&quot;: [
+        816,
+        32
+      ],
+      &quot;id&quot;: &quot;f05140ce-1682-4cf7-97e0-3dc28d96594c&quot;,
+      &quot;name&quot;: &quot;Cloud GET enterprise users2&quot;,
+      &quot;onError&quot;: &quot;continueErrorOutput&quot;
+    }
+  ],
+  &quot;connections&quot;: {
+    &quot;Schedule Trigger&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Compute reference period&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Compute reference period&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Get row(s)&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Call workflow - On form submission&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Get row(s)1&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;If - File exists&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Call workflow - Form ending&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ],
+        [
+          {
+            &quot;node&quot;: &quot;Call workflow - Form ending with error&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Webhook&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Get row(s)2&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Cloud GET Token1&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Cloud GET enterprise users&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ],
+        []
+      ]
+    },
+    &quot;Build record&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;If - Dump is complete&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Split Out&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Convert to File&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;If - Dump is complete&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Split Out&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ],
+        []
+      ]
+    },
+    &quot;Convert to File&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Send email&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Get row(s)&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Cloud GET Token1&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Cloud GET enterprise users&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Build record&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ],
+        []
+      ]
+    },
+    &quot;Cloud GET Token&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Cloud GET enterprise users1&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Build record1&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;If - Dump is complete1&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Split Out1&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Convert to File1&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;If - Dump is complete1&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Split Out1&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Convert to File1&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;If - File exists&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Get row(s)1&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Cloud GET Token&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Cloud GET enterprise users1&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Build record1&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Cloud GET Token2&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Cloud GET enterprise users2&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Build record2&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;If - Dump is complete2&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Split Out2&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Convert to File2&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;If - Dump is complete2&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Split Out2&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Convert to File2&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Respond to Webhook&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Get row(s)2&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Cloud GET Token2&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Cloud GET enterprise users2&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Build record2&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    }
+  },
+  &quot;pinData&quot;: {},
+  &quot;meta&quot;: {
+    &quot;instanceId&quot;: &quot;cebf75a82f18a5a793df051f2621f227512388113c2e471fcc214f13c6c43162&quot;
+  }
+}
+" ></n8n-demo>
+	</body>
+</html>

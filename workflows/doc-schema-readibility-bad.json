@@ -1,0 +1,1066 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-nano",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-NANO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are a customer service agent of the company \"Be Telecom\". Your role is to provide support to users. A user called for issues with their network connectivity on an Internet router provided by your company. You are asked to identify the device causing the issue.\n\nThe user has been uploading images whose description are available in work notes. Extract the Serial Number of the affected device from work notes. Use the tool Get Work Notes to retrieve information about the issue.\n\nOutput the response in json, with the following key \"serial_number\" set to the extracted value. If you could not extract the serial number, output an empty json.\n",
+              "role": "system"
+            },
+            {
+              "content": "Analyse this issue."
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        384,
+        656
+      ],
+      "id": "68bc5a62-68d3-406d-8f69-cc1c797f74f2",
+      "name": "OpenAI - Device identification",
+      "credentials": {
+        "openAiApi": {
+          "id": "cK22lKiEUM7e1eZy",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Use this tool to get work notes associated to the user issue.",
+        "authentication": "basicAuth",
+        "resource": "tableRecord",
+        "operation": "getAll",
+        "tableName": "=sys_journal_field",
+        "returnAll": true,
+        "options": {
+          "sysparm_query": "=element_id={{ $('ServiceNow | Case Get | 3').item.json.sys_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.serviceNowTool",
+      "typeVersion": 1,
+      "position": [
+        544,
+        848
+      ],
+      "id": "3e4e6352-e582-4c46-a11b-5391b0a27db5",
+      "name": "ServiceNow - Get Work Notes - 1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "9f6a2179-24be-44a3-b3bb-9bb6090e430f",
+        "authentication": "basicAuth",
+        "options": {}
+      },
+      "id": "5334fcdc-6cb1-4907-bbdc-31265ffdf7dc",
+      "name": "Webhook - Apizee Cloud",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1328,
+        288
+      ],
+      "webhookId": "9f6a2179-24be-44a3-b3bb-9bb6090e430f",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "urHKHtlL3u1cWUH7",
+          "name": "Test - Form credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.object }}",
+                    "rightValue": "ticket",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "8ed1b17a-660f-4b48-bc39-ab03b9eb9d95"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "ticket"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "311f3e69-86f1-41b9-a694-532b4bbd8030",
+                    "leftValue": "={{ $json.body.object }}",
+                    "rightValue": "conversation",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "conversation"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b583f9d2-da64-4de7-8e7f-bd841715d48a",
+                    "leftValue": "={{ $json.body.object }}",
+                    "rightValue": "media",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "media"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "86932701-3d53-4041-ad14-6b17b46e4b02",
+                    "leftValue": "={{ $json.body.object }}",
+                    "rightValue": "sms",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "sms"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -1104,
+        560
+      ],
+      "id": "c495ae15-dad6-451e-afb9-b136feed1548",
+      "name": "Switch - Apizee object1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "create",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "8ed1b17a-660f-4b48-bc39-ab03b9eb9d95"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "create"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "311f3e69-86f1-41b9-a694-532b4bbd8030",
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "update",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "update"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b583f9d2-da64-4de7-8e7f-bd841715d48a",
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "delete",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "delete"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -1088,
+        272
+      ],
+      "id": "f144be5a-b0cc-435d-8e49-392d372aa9fc",
+      "name": "Switch - Apizee ticket event"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "create",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "8ed1b17a-660f-4b48-bc39-ab03b9eb9d95"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "create"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "311f3e69-86f1-41b9-a694-532b4bbd8030",
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "update",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "update"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b583f9d2-da64-4de7-8e7f-bd841715d48a",
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "delete",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "delete"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -800,
+        240
+      ],
+      "id": "644bfd6c-802c-4ee9-b855-d2af0838fbde",
+      "name": "Switch - Apizee media event"
+    },
+    {
+      "parameters": {
+        "url": "=https://cloud.apizee.com/api/v3/tickets/{{ $('Switch - Apizee ticket event').item.json.body.objectId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Apizee Bearer Proxy - 1').item.json.access_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2e4f728a-0620-4548-abaa-3ed9b74f6ad3",
+      "name": "Apizee - Ticket get - 1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -528,
+        448
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://cloud.apizee.com/api/v3/tickets/{{ $('Switch - Apizee media event').item.json.body.props._parent.id }}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Apizee Bearer Proxy - 2').item.json.access_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bb054c9b-6c1e-4184-9a0c-206e582dec7f",
+      "name": "Apizee - Ticket get - 2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -256,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://cloud.apizee.com/api/v3/medias/{{ $('Webhook - Apizee Cloud').first().json.body.objectId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Apizee Bearer Proxy - 2').item.json.access_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b7141dce-a175-47b7-8e04-4ade22ebceeb",
+      "name": "Apizee - Media get - 2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -32,
+        224
+      ],
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "url": "=https://cloud.apizee.com/api/v3/tickets/{{ $('Switch - Apizee ticket event').item.json.body.objectId }}/medias",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "uncompleted"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Apizee Bearer Proxy - 1').item.json.access_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "959460d0-47b6-4f00-9c8a-aa34cb64552d",
+      "name": "Apizee - Media get - 1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -272,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7495a14f-2d30-4054-b027-85595837de10",
+              "leftValue": "={{ $json.total }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -48,
+        480
+      ],
+      "id": "63def316-b0ed-425e-8ebd-fc0530687fbb",
+      "name": "If - total == 0"
+    },
+    {
+      "parameters": {
+        "url": "=https://cloud.apizee.com/api/v3/medias/{{ $('Webhook - Apizee Cloud').first().json.body.objectId }}/download",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Apizee Bearer Proxy - 2').item.json.access_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4ec3aeb4-4f6a-4e5d-b6a3-60568a63eff9",
+      "name": "Apizee - Media download",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        208,
+        224
+      ],
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        176,
+        592
+      ],
+      "id": "81e78948-a393-475f-8538-82bc56a09509",
+      "name": "Wait - 1 minute",
+      "webhookId": "a23112ff-3c83-415b-bccf-7ce98e63ce47"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        176,
+        368
+      ],
+      "id": "6c8e6fc7-149f-4b6d-9f24-2c5ba87e86d2",
+      "name": "Wait - 5 seconds",
+      "webhookId": "8f1bd511-3f4c-47b6-8fd0-c5083d3c6c17"
+    },
+    {
+      "parameters": {
+        "authentication": "basicAuth",
+        "resource": "tableRecord",
+        "operation": "update",
+        "tableName": "sn_customerservice_case",
+        "id": "={{ $('ServiceNow | Case Get | 3').first().json.sys_id }}",
+        "fieldsToSend": {
+          "field": [
+            {
+              "column": "=comments",
+              "value": "={{ $('OpenAI - Troubleshooting').first().json.message.content }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.serviceNow",
+      "typeVersion": 1,
+      "position": [
+        704,
+        656
+      ],
+      "id": "5a45bfe7-6531-4695-874b-6b12dcc24336",
+      "name": "ServiceNow - Case Update"
+    },
+    {
+      "parameters": {
+        "authentication": "basicAuth",
+        "resource": "tableRecord",
+        "operation": "getAll",
+        "tableName": "sn_customerservice_case",
+        "limit": 1,
+        "options": {
+          "sysparm_query": "=number={{ $('Apizee - Ticket get - 2').item.json.reference }}"
+        }
+      },
+      "type": "n8n-nodes-base.serviceNow",
+      "typeVersion": 1,
+      "position": [
+        432,
+        256
+      ],
+      "id": "f4ef4ff7-cf85-47a3-8ad6-c87fdf1172ed",
+      "name": "ServiceNow - Case Get",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch",
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        736,
+        192
+      ],
+      "id": "eb52c86e-4f25-41f2-992a-c9a3ecff336e",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "authentication": "basicAuth",
+        "resource": "attachment",
+        "tableName": "sn_customerservice_case",
+        "id": "={{ $('ServiceNow - Case Get').first().json.sys_id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.serviceNow",
+      "typeVersion": 1,
+      "position": [
+        928,
+        208
+      ],
+      "id": "c7d8579a-528c-4a10-a09f-8d72d7b6ceb6",
+      "name": "ServiceNow - Attachment upload"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7aaaac43-ba74-431e-89de-5bd61eda391c",
+              "leftValue": "={{ $('Webhook - Apizee Cloud').item.json.body.props.state }}",
+              "rightValue": "done",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -784,
+        608
+      ],
+      "id": "4b3bef36-7855-4170-8455-2d547cda8071",
+      "name": "If - state == done"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7aaaac43-ba74-431e-89de-5bd61eda391c",
+              "leftValue": "={{ $json.body.props.state }}",
+              "rightValue": "completed",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -560,
+        288
+      ],
+      "id": "334e5be5-a5f6-49a7-b8e7-56ef00160aa8",
+      "name": "If - state == completed"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleOAuth2Api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"systemInstruction\": {\n    \"role\": \"user\",\n    \"parts\": [\n      {\n        \"text\": \"\\nYou are a a network engineer expert. Your role is to provide support to users.\\nA user called for issues with their network connectivity. You are asked to troubleshoot the issue.\\n\\nYou have to visually analyze photos and videos on their Internet router provided in input. You need to search for 2 types of informations:\\n- The sticker listing the identification of the router.\\n- The front panel of the router showing the status LEDs.\\n\\nFirst detect whether the media is showing the serial number or the front panel, or both, then analyze it accordingly. If the media shows something else, just state that you are not able to analyze it.\\n\\nWhen the media shows a serial number: You will output \\\"Device identification\\\", then the SN, MAC and IMEI, one per line prefixed by a dash.\\n\\nWhen the media is the front panel of the router: You will output \\\"Front panel LEDs\\\", the the color and status of each LED (ON, OFF, BLINKING), one per line prefixed by a dash.\\nOn the considered router, the LEDs and buttons are layed out as follows on the front panel(from bottom to top):\\n1. Round LED : Power\\n2. Round LED : Fiber\\n3. Round LED : Internet\\n4. Button : WPS\\n5. Bar LED : WiFi\\n6. Button : WiFi\\n7. Round LED : Phone\\n\\nWrite your answers under key: value form. For LED detection, output one line per LED. For Serial Number detection, output one line per identifier. Don't use markdown formatting\"\n      }\n    ]\n  },\n  \"contents\": {\n    \"role\": \"user\",\n    \"parts\": [\n      {\n        \"fileData\": {\n          \"mimeType\": {{ \"\\\"\" + $json.contentType + \"\\\"\" }},\n          \"fileUri\": {{ \"\\\"\" + \"gs://\" + $('Google Cloud Storage - Store image').item.json.bucket + \"/\" + $('Google Cloud Storage - Store image').item.json.name + \"\\\"\" }}\n        }\n      },\n      {\n        \"text\":\"Analyze this image. Write your answer in french.\"\n      }\n    ]\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        656,
+        448
+      ],
+      "id": "d90f8ac1-ed87-4ab3-afd3-4413474b6d9f",
+      "name": "Gemini - Analyse image",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "resource": "object",
+        "operation": "create",
+        "objectName": "={{ $json.title }}",
+        "updateProjection": "noAcl",
+        "createData": {},
+        "createQuery": {},
+        "encryptionHeaders": {},
+        "requestOptions": {
+          "timeout": 8000
+        }
+      },
+      "type": "n8n-nodes-base.googleCloudStorage",
+      "typeVersion": 1,
+      "position": [
+        176,
+        -64
+      ],
+      "id": "63ea7a29-bd6e-4de3-b3c5-8832797a7707",
+      "name": "Google Cloud Storage - Store image",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    }
+  ],
+  "connections": {
+    "OpenAI - Device identification": {
+      "main": [
+        [
+          {
+            "node": "ServiceNow - Case Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ServiceNow - Get Work Notes - 1": {
+      "ai_tool": [
+        [
+          {
+            "node": "OpenAI - Device identification",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Apizee Cloud": {
+      "main": [
+        [
+          {
+            "node": "Switch - Apizee object1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch - Apizee object1": {
+      "main": [
+        [
+          {
+            "node": "Switch - Apizee ticket event",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [
+          {
+            "node": "Switch - Apizee media event",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Switch - Apizee ticket event": {
+      "main": [
+        [],
+        [
+          {
+            "node": "If - state == done",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch - Apizee media event": {
+      "main": [
+        [
+          {
+            "node": "If - state == completed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If - state == completed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apizee - Ticket get - 1": {
+      "main": [
+        [
+          {
+            "node": "Apizee - Media get - 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apizee - Ticket get - 2": {
+      "main": [
+        [
+          {
+            "node": "Apizee - Media get - 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apizee - Media get - 2": {
+      "main": [
+        [
+          {
+            "node": "Apizee - Media download",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apizee - Media get - 1": {
+      "main": [
+        [
+          {
+            "node": "If - total == 0",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - total == 0": {
+      "main": [
+        [
+          {
+            "node": "Wait - 1 minute",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait - 5 seconds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apizee - Media download": {
+      "main": [
+        [
+          {
+            "node": "ServiceNow - Case Get",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Google Cloud Storage - Store image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait - 1 minute": {
+      "main": [
+        [
+          {
+            "node": "OpenAI - Device identification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait - 5 seconds": {
+      "main": [
+        [
+          {
+            "node": "Apizee - Media get - 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ServiceNow - Case Get": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "ServiceNow - Attachment upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ServiceNow - Attachment upload": {
+      "main": [
+        []
+      ]
+    },
+    "If - state == done": {
+      "main": [
+        [
+          {
+            "node": "Apizee - Ticket get - 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - state == completed": {
+      "main": [
+        [
+          {
+            "node": "Apizee - Ticket get - 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini - Analyse image": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Google Cloud Storage - Store image": {
+      "main": [
+        [
+          {
+            "node": "Gemini - Analyse image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cebf75a82f18a5a793df051f2621f227512388113c2e471fcc214f13c6c43162"
+  }
+}

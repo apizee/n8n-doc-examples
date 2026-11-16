@@ -1,0 +1,186 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>doc-errormanagement-wrong</title>
+	</head>
+	<body>
+		<script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs@2.0.0/webcomponents-loader.js"></script>
+		<script src="https://www.unpkg.com/lit@2.0.0-rc.2/polyfill-support.js"></script>
+		<script type="module" src="https://cdn.jsdelivr.net/npm/@n8n_io/n8n-demo-component/n8n-demo.bundled.js"></script>
+
+		<n8n-demo workflow="{
+  &quot;nodes&quot;: [
+    {
+      &quot;parameters&quot;: {
+        &quot;method&quot;: &quot;POST&quot;,
+        &quot;url&quot;: &quot;https://cloud.apizee.com/api/v3/token&quot;,
+        &quot;authentication&quot;: &quot;genericCredentialType&quot;,
+        &quot;genericAuthType&quot;: &quot;httpCustomAuth&quot;,
+        &quot;sendBody&quot;: true,
+        &quot;bodyParameters&quot;: {
+          &quot;parameters&quot;: [
+            {
+              &quot;name&quot;: &quot;grant_type&quot;,
+              &quot;value&quot;: &quot;password&quot;
+            }
+          ]
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;id&quot;: &quot;138ec5df-8d85-4300-b593-8841bb23409c&quot;,
+      &quot;name&quot;: &quot;POST | api/v3/token&quot;,
+      &quot;type&quot;: &quot;n8n-nodes-base.httpRequest&quot;,
+      &quot;typeVersion&quot;: 4.2,
+      &quot;position&quot;: [
+        48,
+        -96
+      ],
+      &quot;credentials&quot;: {
+        &quot;httpCustomAuth&quot;: {
+          &quot;id&quot;: &quot;Jx505sczInZDGpQb&quot;,
+          &quot;name&quot;: &quot;[TEST] Apizee - CO2 evite&quot;
+        }
+      }
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;jsCode&quot;: &quot;// Build screensharing URL\n\n// TODO: define a variable\nconst base_url = \&quot;https://apizee.sekil.fr\&quot;;\n\n// Extract conversation name\nroom_name = $(&#x27;GET | /api/v3/tickets/{ticketId}&#x27;).first().json.conference.room_name;\nroom_conversation_name = room_name.split(&#x27;:&#x27;)[1];\n\n// Build URLs\nscreensharing_url = base_url + \&quot;/screensharing/\&quot; + room_conversation_name;\nvisio_url = base_url + \&quot;/visio/\&quot; + room_conversation_name;\n\nreturn {\&quot;screensharingUrl\&quot;: screensharing_url, \&quot;visioUrl\&quot;: visio_url};&quot;
+      },
+      &quot;id&quot;: &quot;f60f8cfc-28c1-4099-af83-9e80242a0571&quot;,
+      &quot;name&quot;: &quot;URL generation&quot;,
+      &quot;type&quot;: &quot;n8n-nodes-base.code&quot;,
+      &quot;typeVersion&quot;: 2,
+      &quot;position&quot;: [
+        464,
+        -96
+      ]
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;httpMethod&quot;: &quot;POST&quot;,
+        &quot;path&quot;: &quot;screensharing-demo&quot;,
+        &quot;options&quot;: {}
+      },
+      &quot;id&quot;: &quot;a2a5d975-05f4-495c-bc27-829dcf4b6aaf&quot;,
+      &quot;name&quot;: &quot;Apizee | Webhook | Ticket create&quot;,
+      &quot;type&quot;: &quot;n8n-nodes-base.webhook&quot;,
+      &quot;typeVersion&quot;: 2,
+      &quot;position&quot;: [
+        -160,
+        -96
+      ],
+      &quot;webhookId&quot;: &quot;eb4a63d9-194c-4a60-b20c-273f0e46dd2f&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;url&quot;: &quot;=https://cloud.apizee.com/api/v3/tickets/{{ $(&#x27;Apizee | Webhook | Ticket create&#x27;).first().json.body.objectId }}&quot;,
+        &quot;sendHeaders&quot;: true,
+        &quot;headerParameters&quot;: {
+          &quot;parameters&quot;: [
+            {
+              &quot;name&quot;: &quot;accept&quot;,
+              &quot;value&quot;: &quot;application/json&quot;
+            },
+            {
+              &quot;name&quot;: &quot;Authorization&quot;,
+              &quot;value&quot;: &quot;=Bearer {{ $json.access_token }}&quot;
+            }
+          ]
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;id&quot;: &quot;f1a31550-d512-42bc-9274-f0ddf0829e87&quot;,
+      &quot;name&quot;: &quot;GET | /api/v3/tickets/{ticketId}&quot;,
+      &quot;type&quot;: &quot;n8n-nodes-base.httpRequest&quot;,
+      &quot;typeVersion&quot;: 4.2,
+      &quot;position&quot;: [
+        256,
+        -96
+      ]
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;method&quot;: &quot;POST&quot;,
+        &quot;url&quot;: &quot;https://cloud.apizee.com/api/v3/text-messages&quot;,
+        &quot;sendHeaders&quot;: true,
+        &quot;headerParameters&quot;: {
+          &quot;parameters&quot;: [
+            {
+              &quot;name&quot;: &quot;accept&quot;,
+              &quot;value&quot;: &quot;application/json&quot;
+            },
+            {
+              &quot;name&quot;: &quot;Authorization&quot;,
+              &quot;value&quot;: &quot;=Bearer {{ $(&#x27;POST | api/v3/token&#x27;).item.json.access_token }}&quot;
+            }
+          ]
+        },
+        &quot;sendBody&quot;: true,
+        &quot;specifyBody&quot;: &quot;json&quot;,
+        &quot;jsonBody&quot;: &quot;={\n  \&quot;to\&quot;: [\n    \&quot;{{ $(&#x27;GET | /api/v3/tickets/{ticketId}&#x27;).item.json.requestor.phone }}\&quot;\n  ],\n  \&quot;body\&quot;: \&quot;Bonjour, veuillez trouver ci-après votre lien de partage d&#x27;écran : {{ $(&#x27;URL generation&#x27;).item.json.screensharingUrl }}\&quot;\n}&quot;,
+        &quot;options&quot;: {}
+      },
+      &quot;id&quot;: &quot;2f135c49-a35f-4346-ba4f-914ecd47c614&quot;,
+      &quot;name&quot;: &quot;POST | /api/v3/text-messages | FR&quot;,
+      &quot;type&quot;: &quot;n8n-nodes-base.httpRequest&quot;,
+      &quot;typeVersion&quot;: 4.2,
+      &quot;position&quot;: [
+        672,
+        -96
+      ]
+    }
+  ],
+  &quot;connections&quot;: {
+    &quot;POST | api/v3/token&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;GET | /api/v3/tickets/{ticketId}&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;URL generation&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;POST | /api/v3/text-messages | FR&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Apizee | Webhook | Ticket create&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;POST | api/v3/token&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;GET | /api/v3/tickets/{ticketId}&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;URL generation&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    }
+  },
+  &quot;pinData&quot;: {},
+  &quot;meta&quot;: {
+    &quot;instanceId&quot;: &quot;cebf75a82f18a5a793df051f2621f227512388113c2e471fcc214f13c6c43162&quot;
+  }
+}
+" ></n8n-demo>
+	</body>
+</html>

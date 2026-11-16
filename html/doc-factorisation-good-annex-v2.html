@@ -1,0 +1,302 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>doc-factorisation-good-annex-v2</title>
+	</head>
+	<body>
+		<script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs@2.0.0/webcomponents-loader.js"></script>
+		<script src="https://www.unpkg.com/lit@2.0.0-rc.2/polyfill-support.js"></script>
+		<script type="module" src="https://cdn.jsdelivr.net/npm/@n8n_io/n8n-demo-component/n8n-demo.bundled.js"></script>
+
+		<n8n-demo workflow="{
+  &quot;nodes&quot;: [
+    {
+      &quot;parameters&quot;: {
+        &quot;method&quot;: &quot;POST&quot;,
+        &quot;url&quot;: &quot;=https://cloud.apizee.com/api/v3/token&quot;,
+        &quot;sendBody&quot;: true,
+        &quot;bodyParameters&quot;: {
+          &quot;parameters&quot;: [
+            {
+              &quot;name&quot;: &quot;grant_type&quot;,
+              &quot;value&quot;: &quot;password&quot;
+            },
+            {
+              &quot;name&quot;: &quot;username&quot;,
+              &quot;value&quot;: &quot;={{ $(&#x27;Get row(s)&#x27;).item.json.apizee_username}}&quot;
+            },
+            {
+              &quot;name&quot;: &quot;password&quot;,
+              &quot;value&quot;: &quot;={{ $json.decryptedPassword }}&quot;
+            }
+          ]
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.httpRequest&quot;,
+      &quot;typeVersion&quot;: 4.2,
+      &quot;position&quot;: [
+        768,
+        544
+      ],
+      &quot;id&quot;: &quot;05647223-3bfa-4037-84d6-63be186caa99&quot;,
+      &quot;name&quot;: &quot;Cloud GET Token1&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;mode&quot;: &quot;runOnceForEachItem&quot;,
+        &quot;jsCode&quot;: &quot;// Javascript Date() methods are garbage, use String instead\nvar dateparts = $(&#x27;When Executed by Another Workflow&#x27;).first().json.start.split(\&quot;T\&quot;)[0].split(\&quot;-\&quot;);\nvar date = dateparts[2] + \&quot;/\&quot; + dateparts[1] + \&quot;/\&quot; + dateparts[0];\n\n// On fait un -1 pour enlever le compte de service du nombre total d&#x27;utilisateur.\nreturn {\n  \&quot;data\&quot;:[\n    {\n      \&quot;Type\&quot;: \&quot;Users\&quot;,\n      \&quot;Date\&quot;: date,\n      \&quot;Project\&quot;: $(&#x27;Get row(s)&#x27;).item.json.odigo_projectid,\n      \&quot;SubEntity\&quot;: $(&#x27;Get row(s)&#x27;).item.json.odigo_subentityid,\n      \&quot;Quantity\&quot;: $(&#x27;Cloud GET enterprise users&#x27;).item.json.users.length - 1\n    },{\n      \&quot;Type\&quot;: \&quot;Tickets\&quot;,\n      \&quot;Date\&quot;: date,\n      \&quot;Project\&quot;: $(&#x27;Get row(s)&#x27;).item.json.odigo_projectid,\n      \&quot;SubEntity\&quot;: $(&#x27;Get row(s)&#x27;).item.json.odigo_subentityid,\n      \&quot;Quantity\&quot;: $(&#x27;Cloud GET enterprise ticket report&#x27;).item.json.metrics.nb_ticket\n    }\n  ]\n}&quot;
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.code&quot;,
+      &quot;typeVersion&quot;: 2,
+      &quot;position&quot;: [
+        1280,
+        544
+      ],
+      &quot;id&quot;: &quot;fef9ebfc-7007-419b-bec6-a4582011fe36&quot;,
+      &quot;name&quot;: &quot;Build record&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;fieldToSplitOut&quot;: &quot;data&quot;,
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.splitOut&quot;,
+      &quot;typeVersion&quot;: 1,
+      &quot;position&quot;: [
+        1712,
+        544
+      ],
+      &quot;id&quot;: &quot;bc421826-0bed-42cc-b542-9b688764a555&quot;,
+      &quot;name&quot;: &quot;Split Out&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;conditions&quot;: {
+          &quot;options&quot;: {
+            &quot;caseSensitive&quot;: true,
+            &quot;leftValue&quot;: &quot;&quot;,
+            &quot;typeValidation&quot;: &quot;strict&quot;,
+            &quot;version&quot;: 2
+          },
+          &quot;conditions&quot;: [
+            {
+              &quot;id&quot;: &quot;bd2c016b-405d-4c0d-a16e-1fc1559ab8dc&quot;,
+              &quot;leftValue&quot;: &quot;={{ $(\&quot;Build record\&quot;).all() }}&quot;,
+              &quot;rightValue&quot;: &quot;={{ $(&#x27;Get row(s)&#x27;).all().length }}&quot;,
+              &quot;operator&quot;: {
+                &quot;type&quot;: &quot;array&quot;,
+                &quot;operation&quot;: &quot;lengthEquals&quot;,
+                &quot;rightType&quot;: &quot;number&quot;
+              }
+            }
+          ],
+          &quot;combinator&quot;: &quot;and&quot;
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.if&quot;,
+      &quot;typeVersion&quot;: 2.2,
+      &quot;position&quot;: [
+        1504,
+        544
+      ],
+      &quot;id&quot;: &quot;32f372d2-40ee-46f9-a313-9500f8309650&quot;,
+      &quot;name&quot;: &quot;If - Dump is complete&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;binaryPropertyName&quot;: &quot;=data&quot;,
+        &quot;options&quot;: {
+          &quot;delimiter&quot;: &quot;;&quot;,
+          &quot;fileName&quot;: &quot;={{ $(&#x27;When Executed by Another Workflow&#x27;).first().json.filename }}&quot;
+        }
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.convertToFile&quot;,
+      &quot;typeVersion&quot;: 1.1,
+      &quot;position&quot;: [
+        1920,
+        544
+      ],
+      &quot;id&quot;: &quot;6631a8b9-d20b-4e23-bf57-c48cef443f40&quot;,
+      &quot;name&quot;: &quot;Convert to File&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;workflowInputs&quot;: {
+          &quot;values&quot;: [
+            {
+              &quot;name&quot;: &quot;start&quot;
+            },
+            {
+              &quot;name&quot;: &quot;end&quot;
+            },
+            {
+              &quot;name&quot;: &quot;filename&quot;
+            }
+          ]
+        }
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.executeWorkflowTrigger&quot;,
+      &quot;typeVersion&quot;: 1.1,
+      &quot;position&quot;: [
+        352,
+        544
+      ],
+      &quot;id&quot;: &quot;8d3ebd26-6ab9-471f-8c8c-b997aadb82cc&quot;,
+      &quot;name&quot;: &quot;When Executed by Another Workflow&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;operation&quot;: &quot;get&quot;,
+        &quot;dataTableId&quot;: {
+          &quot;__rl&quot;: true,
+          &quot;value&quot;: &quot;vIaSPrutvVInKMXv&quot;,
+          &quot;mode&quot;: &quot;list&quot;,
+          &quot;cachedResultName&quot;: &quot;[ODIGO] Apizee Cloud credentials&quot;,
+          &quot;cachedResultUrl&quot;: &quot;/projects/hLqHPc4e1dusTDAu/datatables/vIaSPrutvVInKMXv&quot;
+        },
+        &quot;matchType&quot;: &quot;allConditions&quot;,
+        &quot;filters&quot;: {
+          &quot;conditions&quot;: [
+            {
+              &quot;keyName&quot;: &quot;active&quot;,
+              &quot;condition&quot;: &quot;isTrue&quot;
+            }
+          ]
+        },
+        &quot;returnAll&quot;: true
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.dataTable&quot;,
+      &quot;typeVersion&quot;: 1,
+      &quot;position&quot;: [
+        544,
+        544
+      ],
+      &quot;id&quot;: &quot;50955a57-a8b4-4242-b068-174d47c53599&quot;,
+      &quot;name&quot;: &quot;Get row(s)&quot;
+    },
+    {
+      &quot;parameters&quot;: {
+        &quot;url&quot;: &quot;https://cloud.apizee.com/api/v3/enterprises/info&quot;,
+        &quot;sendQuery&quot;: true,
+        &quot;queryParameters&quot;: {
+          &quot;parameters&quot;: [
+            {
+              &quot;name&quot;: &quot;limit&quot;,
+              &quot;value&quot;: &quot;1&quot;
+            }
+          ]
+        },
+        &quot;sendHeaders&quot;: true,
+        &quot;headerParameters&quot;: {
+          &quot;parameters&quot;: [
+            {
+              &quot;name&quot;: &quot;Authorization&quot;,
+              &quot;value&quot;: &quot;=Bearer {{ $json.access_token }}&quot;
+            }
+          ]
+        },
+        &quot;options&quot;: {}
+      },
+      &quot;type&quot;: &quot;n8n-nodes-base.httpRequest&quot;,
+      &quot;typeVersion&quot;: 4.2,
+      &quot;position&quot;: [
+        1040,
+        544
+      ],
+      &quot;id&quot;: &quot;0b3f7368-bbec-4d47-85bd-9d26376ad08d&quot;,
+      &quot;name&quot;: &quot;Cloud GET enterprise users&quot;
+    }
+  ],
+  &quot;connections&quot;: {
+    &quot;Cloud GET Token1&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Cloud GET enterprise users&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ],
+        []
+      ]
+    },
+    &quot;Build record&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;If - Dump is complete&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Split Out&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Convert to File&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;If - Dump is complete&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Split Out&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ],
+        []
+      ]
+    },
+    &quot;When Executed by Another Workflow&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Get row(s)&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Get row(s)&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Cloud GET Token1&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ]
+      ]
+    },
+    &quot;Cloud GET enterprise users&quot;: {
+      &quot;main&quot;: [
+        [
+          {
+            &quot;node&quot;: &quot;Build record&quot;,
+            &quot;type&quot;: &quot;main&quot;,
+            &quot;index&quot;: 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  &quot;pinData&quot;: {},
+  &quot;meta&quot;: {
+    &quot;templateCredsSetupCompleted&quot;: true,
+    &quot;instanceId&quot;: &quot;cebf75a82f18a5a793df051f2621f227512388113c2e471fcc214f13c6c43162&quot;
+  }
+}
+" ></n8n-demo>
+	</body>
+</html>
